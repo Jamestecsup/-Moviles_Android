@@ -28,7 +28,8 @@ La aplicacion muestra en consola el cliente, los productos agregados, el detalle
 
 Captura de pantalla de la ejecucion de la aplicacion:
 
-[Insertar aqui la captura de pantalla]
+<img width="1682" height="1112" alt="image" src="https://github.com/user-attachments/assets/286f1ace-9829-40de-9a94-703e7090630e" />
+
 
 ## Tecnologias
 
