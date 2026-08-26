@@ -10,10 +10,11 @@ fun main() {
 
     val carrito = Carrito()
 
-    carrito.agregarProducto(Producto("Laptop HP", 2500.0, 1))
-    carrito.agregarProducto(Producto("Mouse Logitech", 45.5, 2))
-    carrito.agregarProducto(Producto("Teclado Logitech", 120.0, 1))
-    carrito.agregarProducto(Producto("Monitor Samsung", 850.0, 1))
+    carrito.agregarProducto(ProductoFisico("Laptop HP", 2500.0, 1, 2.5))
+    carrito.agregarProducto(ProductoFisico("Mouse Logitech", 45.5, 2, 0.2))
+    carrito.agregarProducto(ProductoFisico("Teclado Logitech", 120.0, 1, 0.8))
+    carrito.agregarProducto(ProductoFisico("Monitor Samsung", 850.0, 1, 4.0))
+    carrito.agregarProducto(ProductoDigital("Licencia Windows", 350.0, 1, 5.0))
 
     println("Cliente: $nombreCliente")
 
