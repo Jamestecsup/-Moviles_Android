@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Lab02CarritoKotlin(Sin IA)"
 include(":app")
+include(":Carritolib")

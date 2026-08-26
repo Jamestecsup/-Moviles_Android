@@ -11,7 +11,8 @@ fun main() {
     println(" CARRITO DE COMPRAS - TIENDA TECSUP ")
     println("=========================================")
 
-    val nombreCliente = "James Huaman"
+    val nombreCliente = "Juan"
+
     val carrito = mutableListOf<Producto>()
 
     carrito.add(Producto("Laptop HP", 2500.0, 1))
