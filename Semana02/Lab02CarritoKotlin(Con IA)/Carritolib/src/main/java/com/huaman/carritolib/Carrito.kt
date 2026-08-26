@@ -1,45 +1,24 @@
 package com.huaman.carritolib
 
-class Carrito(
-    val nombreCliente: String
-) {
+class Carrito {
+
     private val productos = mutableListOf<Producto>()
 
     fun agregarProducto(producto: Producto) {
         productos.add(producto)
     }
 
-    fun mostrarDetalle() {
+    fun mostrarProductos() {
         println()
         println("--------- DETALLE DEL CARRITO ---------")
 
-        var i = 1
-
-        for (producto in productos) {
-            val importe = producto.precio * producto.cantidad
-
-            println(
-                String.format(
-                    "%d. %-20s x%d S/ %8.2f",
-                    i,
-                    producto.nombre,
-                    producto.cantidad,
-                    importe
-                )
-            )
-
-            i++
+        for ((indice, producto) in productos.withIndex()) {
+            println("${indice + 1}. ${producto.mostrarInformacion()}")
         }
     }
 
     fun calcularSubtotal(): Double {
-        var subtotal = 0.0
-
-        for (producto in productos) {
-            subtotal += producto.precio * producto.cantidad
-        }
-
-        return subtotal
+        return productos.sumOf { it.calcularImporte() }
     }
 
     fun calcularIGV(): Double {
