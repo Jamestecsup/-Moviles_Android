@@ -21,12 +21,26 @@ class Carrito {
         return productos.sumOf { it.calcularImporte() }
     }
 
+    fun calcularDescuento(): Double {
+        val subtotal = calcularSubtotal()
+
+        return when {
+            subtotal >= 3000 -> subtotal * 0.10
+            subtotal >= 1500 -> subtotal * 0.05
+            else -> 0.0
+        }
+    }
+
+    fun calcularSubtotalConDescuento(): Double {
+        return calcularSubtotal() - calcularDescuento()
+    }
+
     fun calcularIGV(): Double {
-        return calcularSubtotal() * 0.18
+        return calcularSubtotalConDescuento() * 0.18
     }
 
     fun calcularTotal(): Double {
-        return calcularSubtotal() + calcularIGV()
+        return calcularSubtotalConDescuento() + calcularIGV()
     }
 
     fun cantidadProductos(): Int {

@@ -23,10 +23,14 @@ fun main() {
     println("Cantidad de productos: ${carrito.cantidadProductos()}")
 
     val subtotal = carrito.calcularSubtotal()
+    val descuento = carrito.calcularDescuento()
+    val subtotalConDescuento = carrito.calcularSubtotalConDescuento()
     val igv = carrito.calcularIGV()
     val total = carrito.calcularTotal()
 
-    println(String.format("Subtotal:      S/ %8.2f", subtotal))
-    println(String.format("IGV (18%%):     S/ %8.2f", igv))
-    println(String.format("TOTAL A PAGAR: S/ %8.2f", total))
+    println(String.format("Subtotal:             S/ %8.2f", subtotal))
+    println(String.format("Descuento:            S/ %8.2f", descuento))
+    println(String.format("Subtotal con descuento: S/ %8.2f", subtotalConDescuento))
+    println(String.format("IGV (18%%):            S/ %8.2f", igv))
+    println(String.format("TOTAL A PAGAR:        S/ %8.2f", total))
 }
