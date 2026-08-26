@@ -18,7 +18,8 @@ El programa se ejecuta mediante el modulo Carritolib y muestra los resultados de
 
 Aqui se colocara la captura de pantalla de la ejecucion del programa.
 
-![Evidencia de ejecucion](captura.png)
+<img width="1807" height="923" alt="image" src="https://github.com/user-attachments/assets/cef79bb2-98d1-4696-841d-92bcf78c6637" />
+
 
 ## Conclusion
 
