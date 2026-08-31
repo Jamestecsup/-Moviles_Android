@@ -1,4 +1,4 @@
-package com.huaman.carritolib
+package com.huaman.lab02carritokotlinsinia
 
 data class Producto(
     val nombre: String,
@@ -15,28 +15,11 @@ fun main() {
 
     val carrito = mutableListOf<Producto>()
 
-    // Preguntar cuántos productos desea ingresar
-    print("¿Cuántos productos desea ingresar? ")
-    val cantidadProductos = readln().toInt()
+    carrito.add(Producto("Laptop HP", 2500.0, 1))
+    carrito.add(Producto("Mouse Logitech", 45.5, 2))
+    carrito.add(Producto("Teclado Logitech", 120.0, 1))
+    carrito.add(Producto("Monitor Samsung", 850.0, 1))
 
-    // Ingresar los datos de cada producto
-    for (i in 1..cantidadProductos) {
-        println()
-        println("--------- PRODUCTO $i ---------")
-
-        print("Nombre del producto: ")
-        val nombre = readln()
-
-        print("Cantidad: ")
-        val cantidad = readln().toInt()
-
-        print("Precio: ")
-        val precio = readln().toDouble()
-
-        carrito.add(Producto(nombre, precio, cantidad))
-    }
-
-    println()
     println("Cliente: $nombreCliente")
     println()
 
@@ -53,24 +36,22 @@ fun main() {
     val igv = calcularIGV(subtotal)
     val total = calcularTotal(subtotal, igv)
 
-    println(String.format("Subtotal: S/ %8.2f", subtotal))
-    println(String.format("IGV (18%%): S/ %8.2f", igv))
+    println(String.format("Subtotal:      S/ %8.2f", subtotal))
+    println(String.format("IGV (18%%):     S/ %8.2f", igv))
     println(String.format("TOTAL A PAGAR: S/ %8.2f", total))
 
     val masCaro = carrito.maxByOrNull { it.precio }
 
     if (masCaro != null) {
-        println(
-            "Producto mas caro: ${masCaro.nombre}" +
-                    String.format(" (S/ %.2f)", masCaro.precio)
-        )
+        println("Producto mas caro: ${masCaro.nombre}" +
+                String.format(" (S/ %.2f)", masCaro.precio))
     }
 
     val descuento = calcularDescuento(total)
     val totalConDescuento = total - descuento
 
-    println(String.format("Descuento: S/ %8.2f", descuento))
-    println(String.format("TOTAL FINAL: S/ %8.2f", totalConDescuento))
+    println(String.format("Descuento:      S/ %8.2f", descuento))
+    println(String.format("TOTAL FINAL:    S/ %8.2f", totalConDescuento))
 }
 
 fun calcularSubtotal(productos: List<Producto>): Double {
