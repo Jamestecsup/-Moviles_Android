@@ -1,4 +1,4 @@
-# Lab02CarritoKotlin
+# Lab03CarritoKotlin
 
 ## Descripcion
 Aplicacion de carrito de compras desarrollada en Kotlin para el laboratorio de la Semana 03.
