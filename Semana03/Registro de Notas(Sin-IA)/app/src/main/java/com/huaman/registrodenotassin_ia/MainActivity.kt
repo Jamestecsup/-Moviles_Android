@@ -76,11 +76,58 @@ fun RegistroNotasScreen() {
                 )
             }
 
-            // Sliders para cada curso
             CursoSliderRow("Fundamentos de Programación", "(20%)", nota1) { nota1 = it }
             CursoSliderRow("Programación Orientada a Objetos", "(25%)", nota2) { nota2 = it }
             CursoSliderRow("Programación en Móviles", "(30%)", nota3) { nota3 = it }
             CursoSliderRow("Base de Datos", "(25%)", nota4) { nota4 = it }
+
+            var redondear by remember { mutableStateOf(false) }
+            var confirmado by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Redondear promedio final", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.Black)
+                Switch(
+                    checked = redondear,
+                    onCheckedChange = { redondear = it },
+                    colors = SwitchDefaults.colors(checkedThumbColor = primaryPurple)
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = confirmado,
+                    onCheckedChange = { confirmado = it }
+                )
+                Text(text = "Confirmo que las notas son correctas", fontSize = 14.sp, color = Color.Black)
+            }
+
+            Button(
+                onClick = {},
+                enabled = confirmado,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryPurple,
+                    disabledContainerColor = Color.LightGray
+                )
+            ) {
+                Text(text = "CALCULAR PROMEDIO", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+            }
+
+            Text(
+                text = "Asigna las notas y confirma para calcular",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
         }
     }
 }
