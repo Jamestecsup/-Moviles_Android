@@ -64,7 +64,7 @@ fun RegistroNotasScreen() {
         },
         bottomBar = {
             Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                Text("Desarrollado por: James", fontSize = 12.sp, color = Color.Gray)
+                Text("Desarrollado por: James Huaman Quispe", fontSize = 12.sp, color = Color.Gray)
             }
         }
     ) { innerPadding ->
