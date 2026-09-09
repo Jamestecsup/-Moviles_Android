@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
@@ -34,8 +35,8 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview
 fun RegistroNotasScreen() {
-    // Estados para las notas de los 4 cursos
     var nota1 by remember{mutableFloatStateOf(0f)}
     var nota2 by remember{mutableFloatStateOf(0f)}
     var nota3 by remember{mutableFloatStateOf(0f)}
@@ -119,14 +120,12 @@ fun RegistroNotasScreen() {
                     val n3 = nota3.toInt()
                     val n4 = nota4.toInt()
 
-                    // Fórmula ponderada
                     promedioPonderado = (n1 * 0.20) + (n2 * 0.25) + (n3 * 0.30) + (n4 * 0.25)
                     promedioFinalDouble = promedioPonderado
                     promedioFinalInt = promedioPonderado.roundToInt()
 
                     val finalEval = if (redondear) promedioFinalInt.toDouble() else promedioPonderado
 
-                    // Evaluación con when según reglas de negocio
                     when {
                         finalEval >= 17.0 -> {
                             observacion = "EXCELENTE"
@@ -152,11 +151,88 @@ fun RegistroNotasScreen() {
                 Text(text = "CALCULAR PROMEDIO", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
             }
 
-            Text(
-                text = "Asigna las notas y confirma para calcular",
-                fontSize = 13.sp,
-                color = Color.Gray
-            )
+            if (!calculado) {
+                Text(
+                    text = "Asigna las notas y confirma para calcular",
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+            } else {
+                Text(
+                    text = "✓ Promedio calculado correctamente",
+                    fontSize = 14.sp,
+                    color = Color(0xFF2E7D32),
+                    fontWeight = FontWeight.Bold
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Promedio ponderado: %.2f".format(promedioPonderado),
+                            fontSize = 16.sp,
+                            color = Color.DarkGray
+                        )
+
+                        if (redondear) {
+                            Text(
+                                text = "Promedio final: $promedioFinalInt",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = primaryPurple
+                            )
+                            Text(
+                                text = "(redondeado)",
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
+                        } else {
+                            Text(
+                                text = "Promedio final: %.2f".format(promedioFinalDouble),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = primaryPurple
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = colorChip.copy(alpha = 0.2f)
+                        ) {
+                            Text(
+                                text = observacion,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                color = colorChip,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+                OutlinedButton(
+                    onClick = {
+                        nota1 = 0f
+                        nota2 = 0f
+                        nota3 = 0f
+                        nota4 = 0f
+                        redondear = false
+                        confirmado = false
+                        calculado = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Limpiar todo", color = primaryPurple)
+                }
+            }
         }
     }
 }
