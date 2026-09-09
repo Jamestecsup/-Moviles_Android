@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,16 +36,22 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RegistroNotasScreen() {
     // Estados para las notas de los 4 cursos
-    var nota1 by remember{mutableStateOf(0f)}
-    var nota2 by remember{mutableStateOf(0f)}
-    var nota3 by remember{mutableStateOf(0f)}
-    var nota4 by remember{mutableStateOf(0f)}
-
+    var nota1 by remember{mutableFloatStateOf(0f)}
+    var nota2 by remember{mutableFloatStateOf(0f)}
+    var nota3 by remember{mutableFloatStateOf(0f)}
+    var nota4 by remember{mutableFloatStateOf(0f)}
+    var redondear by remember { mutableStateOf(false) }
+    var confirmado by remember { mutableStateOf(false) }
     val primaryPurple = Color(0xFF5E35B1)
     val lightBackground = Brush.verticalGradient(
         colors = listOf(Color(0xFFEDE7F6), Color(0xFFF3E5F5))
     )
-
+    var calculado by remember { mutableStateOf(false) }
+    var promedioPonderado by remember { mutableDoubleStateOf(0.0) }
+    var promedioFinalDouble by remember { mutableDoubleStateOf(0.0) }
+    var promedioFinalInt by remember { mutableIntStateOf(0) }
+    var observacion by remember { mutableStateOf("") }
+    var colorChip by remember { mutableStateOf(Color.Gray) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -81,9 +88,6 @@ fun RegistroNotasScreen() {
             CursoSliderRow("Programación en Móviles", "(30%)", nota3) { nota3 = it }
             CursoSliderRow("Base de Datos", "(25%)", nota4) { nota4 = it }
 
-            var redondear by remember { mutableStateOf(false) }
-            var confirmado by remember { mutableStateOf(false) }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -109,16 +113,41 @@ fun RegistroNotasScreen() {
             }
 
             Button(
-                onClick = {},
+                onClick = {
+                    val n1 = nota1.toInt()
+                    val n2 = nota2.toInt()
+                    val n3 = nota3.toInt()
+                    val n4 = nota4.toInt()
+
+                    // Fórmula ponderada
+                    promedioPonderado = (n1 * 0.20) + (n2 * 0.25) + (n3 * 0.30) + (n4 * 0.25)
+                    promedioFinalDouble = promedioPonderado
+                    promedioFinalInt = promedioPonderado.roundToInt()
+
+                    val finalEval = if (redondear) promedioFinalInt.toDouble() else promedioPonderado
+
+                    // Evaluación con when según reglas de negocio
+                    when {
+                        finalEval >= 17.0 -> {
+                            observacion = "EXCELENTE"
+                            colorChip = Color(0xFF1B5E20)
+                        }
+                        finalEval >= 13.0 -> {
+                            observacion = "APROBADO"
+                            colorChip = Color(0xFF2E7D32)
+                        }
+                        finalEval >= 10.0 -> {
+                            observacion = "EN RECUPERACIÓN"
+                            colorChip = Color(0xFFEF6C00)
+                        }
+                        else -> {
+                            observacion = "DESAPROBADO"
+                            colorChip = Color(0xFFC62828)
+                        }
+                    }
+                    calculado = true
+                },
                 enabled = confirmado,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(25.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryPurple,
-                    disabledContainerColor = Color.LightGray
-                )
             ) {
                 Text(text = "CALCULAR PROMEDIO", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
             }
