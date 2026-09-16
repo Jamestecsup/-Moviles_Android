@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +35,15 @@ fun TemperatureDisplay() {
         Text(
             text = "Temperatura: $temperatura °C"
         )
+
+        Button(
+            onClick = {
+                control.subir()
+                temperatura = control.obtenerTemperatura()
+            }
+        ) {
+            Text("Subir")
+        }
     }
 }
 
