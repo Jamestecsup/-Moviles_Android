@@ -20,3 +20,18 @@ open class TemperatureControl {
         return temperatura
     }
 }
+
+class TemperatureNormal : TemperatureControl() {
+
+    override fun subir() {
+        temperatura++
+    }
+
+    override fun bajar() {
+        temperatura--
+    }
+
+    override fun resetear() {
+        temperatura = 20
+    }
+}
