@@ -1,6 +1,5 @@
 package com.huaman.lab04_carrito_huaman
 
-import android.net.http.HeaderBlock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -30,6 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 data class Producto(
     val nombre: String,
@@ -79,15 +80,18 @@ fun PantallaCarrito() {
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
     val productos = remember { mutableStateListOf<Producto>() }
-
+    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
     val subtotal = productos.sumOf { it.precio * it.cantidad }
     val igv = subtotal * 0.18
     val total = subtotal + igv
-
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
-
+        Text(
+            text = "Carrito Tecsup",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
         TextField(
             value = nombre,
             onValueChange = { nombre = it },
@@ -160,12 +164,12 @@ fun PantallaCarrito() {
                 items(productos) { producto ->
                     TarjetaProducto(
                         producto = producto,
-                        onEliminar = { productos.remove(producto) }
+                        onEliminar = { productoAEliminar = producto }
                     )
                 }
             }
         }
-
+        Text("Productos: ${productos.size}")
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -202,7 +206,36 @@ fun PantallaCarrito() {
                 )
             }
 
-            Text("Productos: ${productos.size}")
         }
+    }
+    if (productoAEliminar != null) {
+        AlertDialog(
+            onDismissRequest = { productoAEliminar = null },
+            title = {
+                Text("¿Eliminar este producto?")
+            },
+            text = {
+                Text("¿Deseas eliminar ${productoAEliminar!!.nombre}?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        productos.remove(productoAEliminar)
+                        productoAEliminar = null
+                    }
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        productoAEliminar = null
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
