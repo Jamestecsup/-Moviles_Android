@@ -1,5 +1,6 @@
 package com.huaman.lab04_carrito_huaman
 
+import android.net.http.HeaderBlock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -14,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,6 +36,7 @@ data class Producto(
     val precio: Double,
     var cantidad: Int
 )
+
 @Composable
 fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -76,8 +80,12 @@ fun PantallaCarrito() {
     var cantidad by remember { mutableStateOf("") }
     val productos = remember { mutableStateListOf<Producto>() }
 
+    val subtotal = productos.sumOf { it.precio * it.cantidad }
+    val igv = subtotal * 0.18
+    val total = subtotal + igv
+
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
 
         TextField(
@@ -115,7 +123,6 @@ fun PantallaCarrito() {
                     productos.add(
                         Producto(nombre, precioNum, cantidadNum)
                     )
-
                     nombre = ""
                     precio = ""
                     cantidad = ""
@@ -125,20 +132,77 @@ fun PantallaCarrito() {
         ) {
             Text("AGREGAR")
         }
-        Text("Productos: ${productos.size}")
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(productos) { producto ->
-                TarjetaProducto(
-                    producto = producto,
-                    onEliminar = { productos.remove(producto) }
-                )
+
+        if (productos.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No hay productos",
+                        color = Color.Gray
+                    )
+
+                    Text(
+                        text = "Agrega productos",
+                        color = Color.Gray
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(productos) { producto ->
+                    TarjetaProducto(
+                        producto = producto,
+                        onEliminar = { productos.remove(producto) }
+                    )
+                }
             }
         }
 
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Subtotal")
+                Text("S/ %.2f".format(subtotal))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("IGV (18%)")
+                Text("S/ %.2f".format(igv))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "TOTAL",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "S/ %.2f".format(total),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Text("Productos: ${productos.size}")
+        }
     }
 }
