@@ -53,9 +53,17 @@ fun TemperatureDisplay() {
         ) {
             Text("Bajar")
         }
+
+        Button(
+            onClick = {
+                control.resetear()
+                temperatura = control.obtenerTemperatura()
+            }
+        ) {
+            Text("Resetear")
+        }
     }
 }
-
 fun probarPolimorfismo() {
     val control: TemperatureControl = TemperatureNormal()
 
