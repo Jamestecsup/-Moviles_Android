@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import com.huaman.displaytemperaturacon_ia.ui.theme.DisplayTemperaturaConIATheme
 
 class MainActivity : ComponentActivity() {
@@ -33,7 +34,14 @@ fun TemperatureDisplay() {
 
     Column {
         Text(
-            text = "Temperatura: $temperatura °C"
+            text = "Temperatura: $temperatura °C",
+            color = if (temperatura > 30) {
+                Color.Red
+            } else if (temperatura < 10) {
+                Color.Blue
+            } else {
+                Color.Black
+            }
         )
 
         Button(
