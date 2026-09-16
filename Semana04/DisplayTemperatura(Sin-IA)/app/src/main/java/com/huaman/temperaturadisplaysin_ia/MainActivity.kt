@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
@@ -40,7 +41,14 @@ fun TemperatureDisplay() {
             .padding(16.dp)
     ) {
         Text(
-            text = "Temperatura: $temperatura °C"
+            text = "Temperatura: $temperatura °C",
+            color = if (temperatura > 30) {
+                Color.Red
+            } else if (temperatura < 10) {
+                Color.Blue
+            } else {
+                Color.Black
+            }
         )
 
         Button(
