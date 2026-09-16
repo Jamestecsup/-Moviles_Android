@@ -1,5 +1,6 @@
 package com.huaman.lab04_carrito_huaman
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -84,14 +85,31 @@ fun PantallaCarrito() {
     val subtotal = productos.sumOf { it.precio * it.cantidad }
     val igv = subtotal * 0.18
     val total = subtotal + igv
+
+    val descuentoPorcentaje = when {
+        total > 5000 -> 0.10
+        total > 3000 -> 0.05
+        else -> 0.0
+    }
+
+    val descuento = total * descuentoPorcentaje
+    val totalFinal = total - descuento
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
-        Text(
-            text = "Carrito Tecsup",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Carrito Tecsup",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
         TextField(
             value = nombre,
             onValueChange = { nombre = it },
@@ -170,9 +188,11 @@ fun PantallaCarrito() {
             }
         }
         Text("Productos: ${productos.size}")
+
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -206,8 +226,37 @@ fun PantallaCarrito() {
                 )
             }
 
+            if (descuentoPorcentaje > 0) {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Descuento")
+
+                    Text(
+                        text = "- S/ %.2f".format(descuento)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "TOTAL FINAL",
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "S/ %.2f".format(totalFinal),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
+
     if (productoAEliminar != null) {
         AlertDialog(
             onDismissRequest = { productoAEliminar = null },
