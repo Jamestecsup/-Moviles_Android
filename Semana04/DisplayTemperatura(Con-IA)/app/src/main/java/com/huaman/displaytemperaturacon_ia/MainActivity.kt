@@ -44,6 +44,15 @@ fun TemperatureDisplay() {
         ) {
             Text("Subir")
         }
+
+        Button(
+            onClick = {
+                control.bajar()
+                temperatura = control.obtenerTemperatura()
+            }
+        ) {
+            Text("Bajar")
+        }
     }
 }
 
