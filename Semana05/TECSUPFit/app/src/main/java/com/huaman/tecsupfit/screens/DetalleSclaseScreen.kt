@@ -1,4 +1,4 @@
-package com.tecsup.tecsupfit.ui.screens
+package com.huaman.tecsupfit.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,12 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.tecsup.tecsupfit.model.ClaseGym
+import com.huaman.tecsupfit.model.ClaseGym
 
-/**
- * Recibe la clase elegida en Inicio a través del NavGraph (que la busca
- * por claseId en la lista compartida y la pasa aquí ya como objeto).
- */
 @Composable
 fun DetalleClaseScreen(
     clase: ClaseGym,
@@ -37,15 +33,13 @@ fun DetalleClaseScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Header con botón de volver (navegación secuencial hacia atrás)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { /* el back real lo maneja el NavController del host */ }) {
+            IconButton(onClick = { }) {
                 Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
             }
             Text(text = "Detalle de clase", style = MaterialTheme.typography.titleLarge)
         }
 
-        // Bloque destacado con ícono
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,7 +82,6 @@ fun DetalleClaseScreen(
             modifier = Modifier.padding(top = 8.dp)
         )
 
-        // Empuja el botón hacia abajo
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
             Button(
                 onClick = onReservarClick,

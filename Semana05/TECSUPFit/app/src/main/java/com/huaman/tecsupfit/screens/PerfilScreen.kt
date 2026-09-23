@@ -1,4 +1,4 @@
-package com.tecsup.tecsupfit.ui.screens
+package com.huaman.tecsupfit.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,10 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/**
- * totalClases y racha llegan calculados desde AppRoot (a partir del
- * estado compartido de reservas), no están hardcodeados en esta pantalla.
- */
 @Composable
 fun PerfilScreen(
     totalClases: Int,
@@ -41,7 +37,6 @@ fun PerfilScreen(
                 .padding(bottom = 24.dp)
         )
 
-        // Avatar circular con iniciales
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer,
@@ -71,7 +66,6 @@ fun PerfilScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        // Tarjetas de estadísticas
         Row(
             modifier = Modifier
                 .fillMaxWidth()

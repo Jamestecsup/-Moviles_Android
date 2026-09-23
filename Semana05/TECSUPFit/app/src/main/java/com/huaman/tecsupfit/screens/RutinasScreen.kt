@@ -1,4 +1,4 @@
-package com.tecsup.tecsupfit.ui.screens
+package com.huaman.tecsupfit.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,11 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/**
- * Cuarto destino del bottomBar. La tarea no pide requisitos funcionales
- * específicos para esta pantalla (solo que exista como destino navegable
- * con su ícono resaltado), así que se deja como contenido simple.
- */
 @Composable
 fun RutinasScreen() {
     Column(

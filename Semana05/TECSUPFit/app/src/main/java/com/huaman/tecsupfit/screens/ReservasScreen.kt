@@ -1,4 +1,4 @@
-package com.tecsup.tecsupfit.ui.screens
+package com.huaman.tecsupfit.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,8 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.tecsup.tecsupfit.model.Reserva
-import com.tecsup.tecsupfit.ui.components.ReservaItem
+import com.huaman.tecsupfit.model.Reserva
+import com.huaman.tecsupfit.components.ReservaItem
 
 @Composable
 fun ReservasScreen(reservas: List<Reserva>) {
