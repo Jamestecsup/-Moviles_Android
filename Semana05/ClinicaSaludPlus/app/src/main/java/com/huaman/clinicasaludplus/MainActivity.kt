@@ -1,47 +1,77 @@
-package com.huaman.clinicasaludplus
+package com.example.clinicasaludplus
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.huaman.clinicasaludplus.ui.theme.ClinicaSaludPlusTheme
+import androidx.compose.ui.graphics.Color
+import androidx.navigation.compose.rememberNavController
+import com.example.clinicasaludplus.navigation.NavGraph
+import com.example.clinicasaludplus.ui.components.AppDrawer
+import com.example.clinicasaludplus.ui.theme.ClinicaSaludPlusTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             ClinicaSaludPlusTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainApp()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MainApp() {
+    val navController = rememberNavController()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+    val currentScreen = remember { mutableStateOf("inicio") }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ClinicaSaludPlusTheme {
-        Greeting("Android")
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            AppDrawer(
+                currentScreen = currentScreen.value,
+                onNavigate = { route ->
+                    currentScreen.value = route
+                    navController.navigate(route) {
+                        popUpTo("inicio") { saveState = true }
+                        lazyRestoreState = true
+                    }
+                    coroutineScope.launch {
+                        drawerState.close()
+                    }
+                }
+            )
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            NavGraph(
+                navController = navController,
+                onNavigateToDrawer = { route ->
+                    currentScreen.value = route
+                    coroutineScope.launch {
+                        drawerState.open()
+                    }
+                }
+            )
+        }
     }
 }
