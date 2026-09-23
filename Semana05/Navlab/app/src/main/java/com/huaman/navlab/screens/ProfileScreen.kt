@@ -2,13 +2,13 @@ package com.huaman.navlab.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,27 +16,40 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.huaman.navlab.navigation.Screen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Perfil") })
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Mi Perfil")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Mi Perfil",
+            style = MaterialTheme.typography.headlineMedium
+        )
 
-            Button(onClick = { navController.navigate(Screen.Home.route) }) {
-                Text("Volver a Home")
-            }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Juan León Suyon",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = {
+                navController.navigate(Screen.Home.route) {
+                    // Limpia el back stack – evita que cuando vuelvas puedas regresar
+                    popUpTo(Screen.Home.route) { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Ir al inicio")
         }
     }
 }
