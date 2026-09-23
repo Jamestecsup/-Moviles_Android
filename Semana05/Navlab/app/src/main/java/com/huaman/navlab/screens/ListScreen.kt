@@ -1,13 +1,15 @@
 package com.huaman.navlab.screens
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -17,36 +19,36 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.huaman.navlab.navigation.Screen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(navController: NavController) {
-    val items = (1..10).toList()
+    val items = (1..8).map { "Elemento número $it" }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Lista") })
-        }
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(items) { itemId ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            navController.navigate(Screen.Detail.createRoute(itemId))
-                        }
-                ) {
-                    Text(
-                        "Item $itemId",
-                        modifier = Modifier.padding(16.dp)
-                    )
+            TopAppBar(
+                title = { Text("Lista") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
                 }
+            )
+        }
+    ) { padding ->
+        LazyColumn(contentPadding = padding) {
+            items(items.size) { index ->
+                ListItem(
+                    headlineContent = { Text(items[index]) },
+                    supportingContent = { Text("Toca para ver el detalle") },
+                    modifier = Modifier.clickable {
+                        navController.navigate(Screen.Detail.createRoute(index + 1))
+                    }
+                )
+                HorizontalDivider()
             }
         }
     }
