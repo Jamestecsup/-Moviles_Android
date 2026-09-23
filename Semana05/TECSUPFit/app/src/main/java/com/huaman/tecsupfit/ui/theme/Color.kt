@@ -2,10 +2,10 @@ package com.huaman.tecsupfit.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val GreenPrimary = Color(0xFF0F5132)
+val GreenPrimaryContainer = Color(0xFFD1E7DD)
+val GreenOnPrimaryContainer = Color(0xFF0F5132)
+val SurfaceVariantLight = Color(0xFFF2F4F3)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val GreenPrimaryDark = Color(0xFF1B7A43)
+val SurfaceVariantDark = Color(0xFF1E2923)

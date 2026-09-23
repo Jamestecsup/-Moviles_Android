@@ -26,6 +26,7 @@ import com.huaman.tecsupfit.model.ClaseGym
 @Composable
 fun DetalleClaseScreen(
     clase: ClaseGym,
+    onBackClick: () -> Unit,
     onReservarClick: () -> Unit
 ) {
     Column(
@@ -34,7 +35,7 @@ fun DetalleClaseScreen(
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { }) {
+            IconButton(onClick = onBackClick) {
                 Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
             }
             Text(text = "Detalle de clase", style = MaterialTheme.typography.titleLarge)

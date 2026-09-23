@@ -8,59 +8,48 @@ object DataSource {
     val clases = listOf(
         ClaseGym(
             id = "1",
-            nombre = "CrossFit Pro",
-            categoria = "Fuerza",
-            hora = "08:00 AM",
-            sala = "Sala A",
+            nombre = "Yoga funcional",
+            categoria = "Yoga",
+            hora = "7:00 am",
+            sala = "Sala 2",
             duracionMin = 60,
-            descripcion = "Entrenamiento de alta intensidad enfocado en fuerza y resistencia muscular.",
-            cuposDisponibles = 4,
+            descripcion = "Yoga enfocado en movilidad y fuerza funcional.",
+            cuposDisponibles = 5,
             cuposTotal = 15
         ),
         ClaseGym(
             id = "2",
-            nombre = "Spinning Cardio",
-            categoria = "Cardio",
-            hora = "09:30 AM",
-            sala = "Sala B",
+            nombre = "Cross Training",
+            categoria = "Fuerza",
+            hora = "6:00 pm",
+            sala = "Sala 1",
             duracionMin = 45,
-            descripcion = "Clase de ciclismo de interior con música motivadora para quemar calorías.",
-            cuposDisponibles = 2,
-            cuposTotal = 20
-        ),
-        ClaseGym(
-            id = "3",
-            nombre = "Yoga Relax",
-            categoria = "Yoga",
-            hora = "11:00 AM",
-            sala = "Sala C",
-            duracionMin = 50,
-            descripcion = "Sesión de estiramiento y relajación para mejorar la flexibilidad y postura.",
+            descripcion = "Entrenamiento funcional de alta intensidad. Cupos limitados.",
             cuposDisponibles = 8,
             cuposTotal = 12
         ),
         ClaseGym(
-            id = "4",
-            nombre = "Functional Training",
-            categoria = "Fuerza",
-            hora = "04:00 PM",
-            sala = "Sala A",
-            duracionMin = 60,
-            descripcion = "Movimientos funcionales cotidianos para mejorar agilidad y tono muscular.",
-            cuposDisponibles = 5,
-            cuposTotal = 15
+            id = "3",
+            nombre = "Spinning",
+            categoria = "Cardio",
+            hora = "7:30 pm",
+            sala = "Sala 3",
+            duracionMin = 50,
+            descripcion = "Clase de ciclismo indoor de alta quema calórica.",
+            cuposDisponibles = 3,
+            cuposTotal = 20
         )
     )
 
     val reservasIniciales = listOf(
         Reserva(
             id = "r1",
-            clase = clases[0],
+            clase = clases[1], // Cross Training
             estado = EstadoReserva.CONFIRMADA
         ),
         Reserva(
             id = "r2",
-            clase = clases[1],
+            clase = clases[0], // Yoga funcional
             estado = EstadoReserva.COMPLETADA
         )
     )
