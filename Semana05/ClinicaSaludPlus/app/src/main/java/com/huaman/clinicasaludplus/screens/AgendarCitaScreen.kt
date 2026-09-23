@@ -1,4 +1,4 @@
-package com.example.clinicasaludplus.ui.screens
+package com.huaman.clinicasaludplus.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,10 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.clinicasaludplus.model.fechasMock
-import com.example.clinicasaludplus.model.horasMock
-import com.example.clinicasaludplus.model.medicosMock
-import com.example.clinicasaludplus.ui.theme.PurpuraPrimario
+import com.huaman.clinicasaludplus.model.fechasMock
+import com.huaman.clinicasaludplus.model.horasMock
+import com.huaman.clinicasaludplus.model.medicosMock
+import com.huaman.clinicasaludplus.ui.theme.PurpuraPrimario
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

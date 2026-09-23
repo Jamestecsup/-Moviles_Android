@@ -1,4 +1,4 @@
-package com.example.clinicasaludplus.ui.screens
+package com.huaman.clinicasaludplus.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -24,79 +24,79 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.clinicasaludplus.ui.theme.PurpuraPrimario
+import com.huaman.clinicasaludplus.ui.theme.PurpuraPrimario
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialScreen(
-        navController: NavController,
-        onNavigateToDrawer: (String) -> Unit
+    navController: NavController,
+    onNavigateToDrawer: (String) -> Unit
 ) {
-Scaffold(
+    Scaffold(
         topBar = {
-    TopAppBar(
-            title = {
+            TopAppBar(
+                title = {
                     Column {
-                    Text(
+                        Text(
                             text = "Clínica Salud+",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
-                    )
-                    Text(
+                        )
+                        Text(
                             text = "Hola, Juan",
                             fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.9f)
-                    )
-            }
-            },
-            navigationIcon = {
+                        )
+                    }
+                },
+                navigationIcon = {
                     IconButton(onClick = { onNavigateToDrawer("historial") }) {
-                    Icon(
+                        Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
                             tint = Color.White
-                    )
-            }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PurpuraPrimario
+                )
             )
-    )
-}
+        }
     ) { paddingValues ->
-LazyColumn(
-        modifier = Modifier
+        LazyColumn(
+            modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-item {
-    Text(
-            text = "Historial médico",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 16.dp)
-    )
-}
+            item {
+                Text(
+                    text = "Historial médico",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
 
-item {
-    Column(
-            modifier = Modifier
-                    .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(60.dp))
-        Text(
-                text = "Tu historial médico aparecerá aquí",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                fontWeight = FontWeight.Medium
-        )
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(60.dp))
+                    Text(
+                        text = "Tu historial médico aparecerá aquí",
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
     }
 }
-        }
-                }
-                }

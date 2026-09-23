@@ -1,4 +1,4 @@
-package com.example.clinicasaludplus
+package com.huaman.clinicasaludplus
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,9 +16,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
-import com.example.clinicasaludplus.navigation.NavGraph
-import com.example.clinicasaludplus.ui.components.AppDrawer
-import com.example.clinicasaludplus.ui.theme.ClinicaSaludPlusTheme
+import com.huaman.clinicasaludplus.components.AppDrawer
+import com.huaman.clinicasaludplus.navigation.NavGraph
+import com.huaman.clinicasaludplus.ui.theme.ClinicaSaludPlusTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +48,7 @@ fun MainApp() {
                     currentScreen.value = route
                     navController.navigate(route) {
                         popUpTo("inicio") { saveState = true }
-                        lazyRestoreState = true
+                        restoreState = true
                     }
                     coroutineScope.launch {
                         drawerState.close()

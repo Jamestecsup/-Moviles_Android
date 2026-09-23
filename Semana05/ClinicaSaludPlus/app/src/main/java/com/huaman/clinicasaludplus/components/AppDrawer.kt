@@ -1,4 +1,4 @@
-package com.example.clinicasaludplus.ui.components
+package com.huaman.clinicasaludplus.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.clinicasaludplus.ui.theme.PurpuraPrimario
+import com.huaman.clinicasaludplus.ui.theme.PurpuraPrimario
 
 @Composable
 fun AppDrawer(
