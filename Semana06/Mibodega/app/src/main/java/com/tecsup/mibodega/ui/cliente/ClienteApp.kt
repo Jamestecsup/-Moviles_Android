@@ -11,10 +11,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.mibodega.ui.cliente.modelo.ItemCarrito
+import com.tecsup.mibodega.ui.cliente.modelo.PedidoConfirmado
 import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
 import com.tecsup.mibodega.ui.cliente.screens.bienvenida.BienvenidaScreen
 import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
+import com.tecsup.mibodega.ui.cliente.screens.confirmacion.ConfirmacionScreen
 import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
 import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
@@ -39,6 +41,7 @@ private object Rutas {
     const val DETALLE = "detalle/{productoId}"
     const val CARRITO = "carrito"
     const val ENTREGA = "entrega"
+    const val CONFIRMACION = "confirmacion"
 
     fun detalle(productoId: Int) = "detalle/$productoId"
 }
@@ -53,6 +56,8 @@ fun ClienteApp() {
     var nombreRegistro by remember { mutableStateOf("") }
     var telefonoRegistro by remember { mutableStateOf("") }
     var direccionRegistro by remember { mutableStateOf("") }
+    // El último pedido confirmado, lo lee la Confirmación.
+    var ultimoPedido by remember { mutableStateOf<PedidoConfirmado?>(null) }
     val totalPedido = carrito.sumOf { it.producto.precio * it.cantidad } + COSTO_DELIVERY
 
     NavHost(
@@ -155,8 +160,29 @@ fun ClienteApp() {
                 telefonoInicial = telefonoRegistro,
                 direccionInicial = direccionRegistro,
                 onVolver = { navController.popBackStack() },
-                onConfirmarPedido = { _, _, _ -> }
+                onConfirmarPedido = { direccion, referencia, metodoPago ->
+                    ultimoPedido = PedidoConfirmado(
+                        numero = (1000..9999).random().toString(),
+                        total = totalPedido,
+                        metodoPago = metodoPago,
+                        direccion = direccion,
+                        referencia = referencia
+                    )
+                    carrito = emptyList()
+                    navController.navigate(Rutas.CONFIRMACION) {
+                        popUpTo(Rutas.INICIO)
+                    }
+                }
             )
+        }
+
+        composable(Rutas.CONFIRMACION) {
+            ultimoPedido?.let { pedido ->
+                ConfirmacionScreen(
+                    pedido = pedido,
+                    onVolverAlInicio = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
