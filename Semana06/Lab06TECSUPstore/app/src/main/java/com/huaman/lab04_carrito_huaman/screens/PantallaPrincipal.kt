@@ -1,8 +1,15 @@
 package com.huaman.lab04_carrito_huaman.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -34,8 +41,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.huaman.lab04_carrito_huaman.model.Producto
 import kotlinx.coroutines.launch
@@ -55,25 +65,59 @@ enum class DestinoNavegacion(
 fun PantallaPrincipal(){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var destinoActual by remember { mutableStateOf(DestinoNavegacion.INICIO) }
+    var destinoActual by remember { mutableStateOf(DestinoNavegacion.CARRITO) }
     val productosCarrito = remember { mutableStateListOf<Producto>() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet{
-                Text(
-                    text = "TECSUP Store",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-                HorizontalDivider()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(20.dp)
+                ){
+                    Column{
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ){
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Avatar",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Estudiante TECSUP",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "estudiante@tecsup.edu.pe",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
                 DestinoNavegacion.entries.forEach{ destino ->
+                    val esSeleccionado = destinoActual == destino
                     NavigationDrawerItem(
                         label = {
-                            Text(text = destino.titulo)
+                            Text(
+                                text = destino.titulo,
+                                fontWeight = if(esSeleccionado) FontWeight.Bold else FontWeight.Normal
+                            )
                         },
-                        selected = destinoActual == destino,
+                        selected = esSeleccionado,
                         onClick = {
                             destinoActual = destino
                             scope.launch{
@@ -82,7 +126,7 @@ fun PantallaPrincipal(){
                         },
                         icon = {
                             Icon(
-                                imageVector = if(destinoActual == destino) destino.iconoSeleccionado else destino.iconoNoSeleccionado,
+                                imageVector = if(esSeleccionado) destino.iconoSeleccionado else destino.iconoNoSeleccionado,
                                 contentDescription = destino.titulo
                             )
                         },
@@ -103,7 +147,10 @@ fun PantallaPrincipal(){
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(text = destinoActual.titulo)
+                        Text(
+                            text = destinoActual.titulo,
+                            fontWeight = FontWeight.Bold
+                        )
                     },
                     navigationIcon = {
                         IconButton(
@@ -115,7 +162,7 @@ fun PantallaPrincipal(){
                         ){
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = "Abrir menu de navegacion"
+                                contentDescription = "Abrir menú de navegación."
                             )
                         }
                     },
