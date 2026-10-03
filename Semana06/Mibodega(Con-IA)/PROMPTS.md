@@ -7,3 +7,8 @@
 - **Fecha**: 2026-10-03
 - **Prompt**:
   > "Agrega campo de contraseña a `LoginScreen.kt`, valida contra un usuario y clave fijos en el código (`987654321` / `tecsup123`) y muestra el error en rojo si no coinciden. Agrega `esContrasena` a `CampoTexto.kt` con `PasswordVisualTransformation`."
+
+## Prompt 2: Campos en rojo si están vacíos
+- **Fecha**: 2026-10-03
+- **Prompt**:
+  > "Agrega `esError` a `CampoTexto.kt` con `isError` y mensaje 'Completa este campo'. En Registro, Entrega y Login marca en rojo los vacíos al intentar enviar (`intentoEnviar`) y no avances hasta que estén llenos."

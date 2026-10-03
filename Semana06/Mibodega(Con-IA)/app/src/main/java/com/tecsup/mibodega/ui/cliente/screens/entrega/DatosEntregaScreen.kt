@@ -55,6 +55,8 @@ fun DatosEntregaScreen(
     var referencia by remember { mutableStateOf("") }
     var metodoPago by remember { mutableStateOf("Efectivo al entregar") }
     val metodosPago = listOf("Efectivo al entregar", "Yape", "Plin")
+    var intentoEnviar by remember { mutableStateOf(false) }
+    val datosValidos = nombre.isNotBlank() && telefono.isNotBlank() && direccion.isNotBlank()
 
     Column(
         modifier = Modifier
@@ -86,7 +88,8 @@ fun DatosEntregaScreen(
             etiqueta = "Nombre",
             valor = nombre,
             onValorCambia = { nombre = it },
-            placeholder = "Juan Pérez"
+            placeholder = "Juan Pérez",
+            esError = intentoEnviar && nombre.isBlank()
         )
 
         Spacer(Modifier.height(16.dp))
@@ -96,7 +99,8 @@ fun DatosEntregaScreen(
             valor = telefono,
             onValorCambia = { telefono = it },
             placeholder = "987 654 321",
-            teclado = KeyboardType.Phone
+            teclado = KeyboardType.Phone,
+            esError = intentoEnviar && telefono.isBlank()
         )
 
         Spacer(Modifier.height(16.dp))
@@ -105,7 +109,8 @@ fun DatosEntregaScreen(
             etiqueta = "Dirección",
             valor = direccion,
             onValorCambia = { direccion = it },
-            placeholder = "Av. Los Olivos 123"
+            placeholder = "Av. Los Olivos 123",
+            esError = intentoEnviar && direccion.isBlank()
         )
 
         Spacer(Modifier.height(16.dp))
@@ -151,8 +156,13 @@ fun DatosEntregaScreen(
 
         BotonPrimario(
             texto = "Confirmar pedido",
-            onClick = { onConfirmarPedido(direccion, referencia, metodoPago) },
-            habilitado = direccion.isNotBlank()
+            onClick = {
+                if (datosValidos) {
+                    onConfirmarPedido(direccion, referencia, metodoPago)
+                } else {
+                    intentoEnviar = true
+                }
+            }
         )
 
         Spacer(Modifier.height(24.dp))

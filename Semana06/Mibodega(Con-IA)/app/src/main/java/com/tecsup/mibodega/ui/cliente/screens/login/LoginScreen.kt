@@ -47,6 +47,7 @@ fun LoginScreen(
     var telefono by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    var intentoEnviar by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -84,7 +85,8 @@ fun LoginScreen(
                 error = null
             },
             placeholder = "987 654 321",
-            teclado = KeyboardType.Phone
+            teclado = KeyboardType.Phone,
+            esError = intentoEnviar && telefono.isBlank()
         )
 
         Spacer(Modifier.height(16.dp))
@@ -98,7 +100,8 @@ fun LoginScreen(
             },
             placeholder = "Tu contraseña",
             teclado = KeyboardType.Password,
-            esContrasena = true
+            esContrasena = true,
+            esError = intentoEnviar && clave.isBlank()
         )
 
         if (error != null) {
@@ -115,7 +118,9 @@ fun LoginScreen(
         BotonPrimario(
             texto = "Ingresar",
             onClick = {
-                if (telefono.filter { it.isDigit() } == USUARIO_OK && clave == CLAVE_OK) {
+                if (telefono.isBlank() || clave.isBlank()) {
+                    intentoEnviar = true
+                } else if (telefono.filter { it.isDigit() } == USUARIO_OK && clave == CLAVE_OK) {
                     onIngresar(telefono)
                 } else {
                     error = "Usuario o contraseña incorrectos"

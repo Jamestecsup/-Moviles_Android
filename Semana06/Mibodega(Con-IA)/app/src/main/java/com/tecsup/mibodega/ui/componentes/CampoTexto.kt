@@ -30,7 +30,8 @@ fun CampoTexto(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     teclado: KeyboardType = KeyboardType.Text,
-    esContrasena: Boolean = false
+    esContrasena: Boolean = false,
+    esError: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -47,6 +48,15 @@ fun CampoTexto(
             placeholder = placeholder?.let { { Text(it) } },
             singleLine = true,
             shape = RoundedCornerShape(10.dp),
+            isError = esError,
+            supportingText = {
+                if (esError) {
+                    Text(
+                        text = "Completa este campo",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = teclado),
             visualTransformation = if (esContrasena) PasswordVisualTransformation() else VisualTransformation.None,
             colors = OutlinedTextFieldDefaults.colors(
