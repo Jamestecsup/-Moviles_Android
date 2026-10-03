@@ -43,7 +43,9 @@ import com.tecsup.mibodega.ui.theme.BodegaTheme
 @Composable
 fun CategoriasScreen(
     productos: List<Producto> = listaProductosFake,
-    onAgregarProducto: (Producto) -> Unit
+    favoritosIds: Set<Int> = emptySet(),
+    onAgregarProducto: (Producto) -> Unit,
+    onFavoritoClick: (Int) -> Unit = {}
 ) {
     var categoriaElegida by remember { mutableStateOf<String?>(null) }
     val categorias = listaCategorias.filter { it != "Todos" }
@@ -121,7 +123,9 @@ fun CategoriasScreen(
                     ProductoCard(
                         producto = producto,
                         onClick = {},
-                        onAgregar = { onAgregarProducto(producto) }
+                        onAgregar = { onAgregarProducto(producto) },
+                        esFavorito = producto.id in favoritosIds,
+                        onFavoritoClick = { onFavoritoClick(producto.id) }
                     )
                 }
             }
@@ -133,6 +137,5 @@ fun CategoriasScreen(
 @Composable
 private fun CategoriasPreview() {
     BodegaTheme {
-        CategoriasScreen(onAgregarProducto = {})
-    }
+        CategoriasScreen(onAgregarProducto = {})    }
 }

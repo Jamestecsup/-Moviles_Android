@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavType
@@ -21,6 +22,7 @@ import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
 import com.tecsup.mibodega.ui.cliente.screens.confirmacion.ConfirmacionScreen
 import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
 import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
+import com.tecsup.mibodega.ui.cliente.screens.favoritos.FavoritosScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
 import com.tecsup.mibodega.ui.cliente.screens.login.LoginScreen
 import com.tecsup.mibodega.ui.cliente.screens.pedidos.MisPedidosScreen
@@ -44,6 +46,7 @@ private object Rutas {
     const val DETALLE = "detalle/{productoId}"
     const val CARRITO = "carrito"
     const val PEDIDOS = "pedidos"
+    const val FAVORITOS = "favoritos"
     const val ENTREGA = "entrega"
     const val CONFIRMACION = "confirmacion"
 
@@ -63,6 +66,8 @@ fun ClienteApp() {
     // La cuenta que se muestra en Perfil: sale del registro
     // o del teléfono con el que se ingresó.
     var cuenta by remember { mutableStateOf<DatosCuenta?>(null) }
+    // Los ids marcados con el corazón, los lee Favoritos.
+    val favoritosIds = remember { mutableStateSetOf<Int>() }
     // El último pedido confirmado, lo lee la Confirmación.
     var ultimoPedido by remember { mutableStateOf<PedidoConfirmado?>(null) }
     // El historial que muestra Mis pedidos.
@@ -123,13 +128,22 @@ fun ClienteApp() {
             InicioScreen(
                 cantidadCarrito = carrito.sumOf { it.cantidad },
                 cuenta = cuenta,
+                favoritosIds = favoritosIds,
                 onVerCarrito = { navController.navigate(Rutas.CARRITO) },
                 onVerPedidos = { navController.navigate(Rutas.PEDIDOS) },
+                onVerFavoritos = { navController.navigate(Rutas.FAVORITOS) },
                 onProductoClick = { producto ->
                     navController.navigate(Rutas.detalle(producto.id))
                 },
                 onAgregarProducto = { producto ->
                     carrito = agregarOSumarProducto(carrito, producto, 1)
+                },
+                onFavoritoClick = { productoId ->
+                    if (productoId in favoritosIds) {
+                        favoritosIds.remove(productoId)
+                    } else {
+                        favoritosIds.add(productoId)
+                    }
                 }
             )
         }
@@ -147,6 +161,14 @@ fun ClienteApp() {
                 onAgregarAlCarrito = { productoSeleccionado, cantidad ->
                     carrito = agregarOSumarProducto(carrito, productoSeleccionado, cantidad)
                     navController.popBackStack()
+                },
+                esFavorito = producto.id in favoritosIds,
+                onFavoritoClick = {
+                    if (producto.id in favoritosIds) {
+                        favoritosIds.remove(producto.id)
+                    } else {
+                        favoritosIds.add(producto.id)
+                    }
                 }
             )
         }
@@ -203,6 +225,19 @@ fun ClienteApp() {
         composable(Rutas.PEDIDOS) {
             MisPedidosScreen(
                 pedidos = historialPedidos,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+
+        composable(Rutas.FAVORITOS) {
+            FavoritosScreen(
+                favoritos = listaProductosFake.filter { it.id in favoritosIds },
+                onAgregarProducto = { producto ->
+                    carrito = agregarOSumarProducto(carrito, producto, 1)
+                },
+                onQuitarFavorito = { productoId ->
+                    favoritosIds.remove(productoId)
+                },
                 onVolver = { navController.popBackStack() }
             )
         }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
@@ -70,10 +71,13 @@ fun InicioScreen(
     productos: List<Producto> = listaProductosFake,
     cantidadCarrito: Int,
     cuenta: DatosCuenta? = null,
+    favoritosIds: Set<Int> = emptySet(),
     onVerCarrito: () -> Unit,
     onVerPedidos: () -> Unit = {},
+    onVerFavoritos: () -> Unit = {},
     onProductoClick: (Producto) -> Unit,
-    onAgregarProducto: (Producto) -> Unit
+    onAgregarProducto: (Producto) -> Unit,
+    onFavoritoClick: (Int) -> Unit = {}
 ) {
     var tab by remember { mutableStateOf(0) }
     var categoriaSeleccionada by remember { mutableStateOf(listaCategorias.first()) }
@@ -90,6 +94,9 @@ fun InicioScreen(
             TopAppBar(
                 title = { Text("Mi Bodega", fontWeight = FontWeight.Bold) },
                 actions = {
+                    IconButton(onClick = onVerFavoritos) {
+                        Icon(Icons.Default.FavoriteBorder, contentDescription = "Favoritos")
+                    }
                     IconButton(onClick = onVerCarrito) {
                         BadgedBox(
                             badge = {
@@ -124,7 +131,9 @@ fun InicioScreen(
         ) {
             when (tab) {
                 1 -> CategoriasScreen(
-                    onAgregarProducto = onAgregarProducto
+                    favoritosIds = favoritosIds,
+                    onAgregarProducto = onAgregarProducto,
+                    onFavoritoClick = onFavoritoClick
                 )
                 3 -> PerfilScreen(
                     cuenta = cuenta
@@ -136,7 +145,9 @@ fun InicioScreen(
                     textoBusqueda = textoBusqueda,
                     onBusquedaCambia = { textoBusqueda = it },
                     onProductoClick = onProductoClick,
-                    onAgregarProducto = onAgregarProducto
+                    onAgregarProducto = onAgregarProducto,
+                    favoritosIds = favoritosIds,
+                    onFavoritoClick = onFavoritoClick
                 )
             }
         }
@@ -151,7 +162,9 @@ private fun ContenidoInicio(
     textoBusqueda: String,
     onBusquedaCambia: (String) -> Unit,
     onProductoClick: (Producto) -> Unit,
-    onAgregarProducto: (Producto) -> Unit
+    onAgregarProducto: (Producto) -> Unit,
+    favoritosIds: Set<Int>,
+    onFavoritoClick: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -206,7 +219,9 @@ private fun ContenidoInicio(
                 ProductoCard(
                     producto = producto,
                     onClick = { onProductoClick(producto) },
-                    onAgregar = { onAgregarProducto(producto) }
+                    onAgregar = { onAgregarProducto(producto) },
+                    esFavorito = producto.id in favoritosIds,
+                    onFavoritoClick = { onFavoritoClick(producto.id) }
                 )
             }
         }

@@ -22,3 +22,8 @@
 - **Fecha**: 2026-10-03
 - **Prompt**:
   > "Crea `MisPedidosScreen.kt` con un `LazyColumn` del historial (`numero`, total, método y dirección) y mensaje si está vacío. Guarda cada confirmado en un `mutableStateListOf` en `ClienteApp.kt`, agrega la ruta `pedidos` y lleva ahí la pestaña Pedidos del `NavigationBar` (el carrito queda en el icono de la topBar)."
+
+## Prompt 5: Favoritos con corazón y su pantalla
+- **Fecha**: 2026-10-03
+- **Prompt**:
+  > "Marca favoritos con un corazón (`Favorite` / `FavoriteBorder`) en `ProductoCard.kt` y en el detalle, guarda los ids en un `mutableStateSetOf` en `ClienteApp.kt`, crea `FavoritosScreen.kt` con grid y ruta `favoritos`, y abre esa ruta desde un icono de corazón en la topBar de Inicio."
