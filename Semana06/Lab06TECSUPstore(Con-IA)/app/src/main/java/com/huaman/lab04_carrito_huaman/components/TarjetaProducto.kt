@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
@@ -35,6 +36,7 @@ fun TarjetaProducto(
     producto: Producto,
     onAumentar: () -> Unit = {},
     onDisminuir: () -> Unit = {},
+    onFavoritoClick: () -> Unit = {},
     onEliminar: () -> Unit
 ){
     var expanded by remember { mutableStateOf(false) }
@@ -74,6 +76,19 @@ fun TarjetaProducto(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ){
+                    DropdownMenuItem(
+                        text = { Text("Favoritos") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "Favoritos"
+                            )
+                        },
+                        onClick = {
+                            expanded = false
+                            onFavoritoClick()
+                        }
+                    )
                     DropdownMenuItem(
                         text = { Text("Aumentar cantidad") },
                         leadingIcon = {

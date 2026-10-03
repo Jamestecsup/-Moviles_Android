@@ -33,7 +33,8 @@ import com.huaman.lab04_carrito_huaman.model.Producto
 
 @Composable
 fun PantallaCarrito(
-    productos: SnapshotStateList<Producto> = remember { mutableStateListOf() }
+    productos: SnapshotStateList<Producto> = remember { mutableStateListOf() },
+    onFavoritoClick: (Producto) -> Unit = {}
 ){
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
@@ -134,6 +135,7 @@ fun PantallaCarrito(
                 items(productos){ producto ->
                     TarjetaProducto(
                         producto = producto,
+                        onFavoritoClick = { onFavoritoClick(producto) },
                         onAumentar = {
                             val index = productos.indexOf(producto)
                             if(index != -1){
