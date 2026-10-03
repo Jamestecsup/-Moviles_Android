@@ -71,6 +71,7 @@ fun InicioScreen(
     cantidadCarrito: Int,
     cuenta: DatosCuenta? = null,
     onVerCarrito: () -> Unit,
+    onVerPedidos: () -> Unit = {},
     onProductoClick: (Producto) -> Unit,
     onAgregarProducto: (Producto) -> Unit
 ) {
@@ -110,7 +111,7 @@ fun InicioScreen(
                     tab = indice
                     if (indice == 2) {
                         tab = 0
-                        onVerCarrito()
+                        onVerPedidos()
                     }
                 }
             )

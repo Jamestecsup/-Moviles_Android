@@ -17,3 +17,8 @@
 - **Fecha**: 2026-10-03
 - **Prompt**:
   > "En `CarritoScreen.kt` muestra 'Tu carrito está vacío' cuando no hay productos (ocultando el resumen) y pide confirmación con un `AlertDialog` antes de eliminar un producto."
+
+## Prompt 4: Mis pedidos con historial
+- **Fecha**: 2026-10-03
+- **Prompt**:
+  > "Crea `MisPedidosScreen.kt` con un `LazyColumn` del historial (`numero`, total, método y dirección) y mensaje si está vacío. Guarda cada confirmado en un `mutableStateListOf` en `ClienteApp.kt`, agrega la ruta `pedidos` y lleva ahí la pestaña Pedidos del `NavigationBar` (el carrito queda en el icono de la topBar)."

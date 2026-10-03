@@ -2,6 +2,7 @@ package com.tecsup.mibodega.ui.cliente
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -22,6 +23,7 @@ import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
 import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
 import com.tecsup.mibodega.ui.cliente.screens.login.LoginScreen
+import com.tecsup.mibodega.ui.cliente.screens.pedidos.MisPedidosScreen
 import com.tecsup.mibodega.ui.cliente.screens.registro.RegistroScreen
 
 private const val COSTO_DELIVERY = 4.00
@@ -41,6 +43,7 @@ private object Rutas {
     const val INICIO = "inicio"
     const val DETALLE = "detalle/{productoId}"
     const val CARRITO = "carrito"
+    const val PEDIDOS = "pedidos"
     const val ENTREGA = "entrega"
     const val CONFIRMACION = "confirmacion"
 
@@ -62,6 +65,8 @@ fun ClienteApp() {
     var cuenta by remember { mutableStateOf<DatosCuenta?>(null) }
     // El último pedido confirmado, lo lee la Confirmación.
     var ultimoPedido by remember { mutableStateOf<PedidoConfirmado?>(null) }
+    // El historial que muestra Mis pedidos.
+    val historialPedidos = remember { mutableStateListOf<PedidoConfirmado>() }
     val totalPedido = carrito.sumOf { it.producto.precio * it.cantidad } + COSTO_DELIVERY
 
     NavHost(
@@ -119,6 +124,7 @@ fun ClienteApp() {
                 cantidadCarrito = carrito.sumOf { it.cantidad },
                 cuenta = cuenta,
                 onVerCarrito = { navController.navigate(Rutas.CARRITO) },
+                onVerPedidos = { navController.navigate(Rutas.PEDIDOS) },
                 onProductoClick = { producto ->
                     navController.navigate(Rutas.detalle(producto.id))
                 },
@@ -185,11 +191,19 @@ fun ClienteApp() {
                         direccion = direccion,
                         referencia = referencia
                     )
+                    ultimoPedido?.let { historialPedidos.add(it) }
                     carrito = emptyList()
                     navController.navigate(Rutas.CONFIRMACION) {
                         popUpTo(Rutas.INICIO)
                     }
                 }
+            )
+        }
+
+        composable(Rutas.PEDIDOS) {
+            MisPedidosScreen(
+                pedidos = historialPedidos,
+                onVolver = { navController.popBackStack() }
             )
         }
 
