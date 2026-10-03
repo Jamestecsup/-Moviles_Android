@@ -35,6 +35,8 @@ import com.tecsup.mibodega.ui.componentes.CampoTexto
 import com.tecsup.mibodega.ui.theme.BodegaTheme
 import com.tecsup.mibodega.ui.theme.VerdeBodega
 
+private const val COSTO_DELIVERY = 4.00
+
 /**
  * Pantalla 6: Datos de entrega (mockup "Cliente").
  * Pide a dónde llevar el pedido y cómo se paga.
@@ -42,12 +44,12 @@ import com.tecsup.mibodega.ui.theme.VerdeBodega
  */
 @Composable
 fun DatosEntregaScreen(
-    total: Double,
+    subtotal: Double,
     nombreInicial: String = "",
     telefonoInicial: String = "",
     direccionInicial: String = "",
     onVolver: () -> Unit,
-    onConfirmarPedido: (direccion: String, referencia: String, metodoPago: String) -> Unit
+    onConfirmarPedido: (direccion: String, referencia: String, metodoPago: String, total: Double) -> Unit
 ) {
     var nombre by remember { mutableStateOf(nombreInicial) }
     var telefono by remember { mutableStateOf(telefonoInicial) }
@@ -55,8 +57,11 @@ fun DatosEntregaScreen(
     var referencia by remember { mutableStateOf("") }
     var metodoPago by remember { mutableStateOf("Efectivo al entregar") }
     val metodosPago = listOf("Efectivo al entregar", "Yape", "Plin")
+    var esDelivery by remember { mutableStateOf(true) }
     var intentoEnviar by remember { mutableStateOf(false) }
     val datosValidos = nombre.isNotBlank() && telefono.isNotBlank() && direccion.isNotBlank()
+    val costoEnvio = if (esDelivery) COSTO_DELIVERY else 0.0
+    val total = subtotal + costoEnvio
 
     Column(
         modifier = Modifier
@@ -125,6 +130,38 @@ fun DatosEntregaScreen(
         Spacer(Modifier.height(24.dp))
 
         Text(
+            text = "Tipo de entrega",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { esDelivery = true },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = esDelivery,
+                onClick = { esDelivery = true }
+            )
+            Text(text = "Delivery (S/ %.2f)".format(COSTO_DELIVERY))
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { esDelivery = false },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = !esDelivery,
+                onClick = { esDelivery = false }
+            )
+            Text(text = "Recojo en tienda (gratis)")
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
             text = "Método de pago",
             style = MaterialTheme.typography.titleMedium
         )
@@ -147,6 +184,16 @@ fun DatosEntregaScreen(
         Spacer(Modifier.height(16.dp))
 
         Text(
+            text = "Subtotal: S/ %.2f".format(subtotal),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = if (esDelivery) "Envío: S/ %.2f".format(costoEnvio) else "Envío: gratis (recojo)",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
             text = "Total a pagar: S/ %.2f".format(total),
             style = MaterialTheme.typography.titleMedium,
             color = VerdeBodega
@@ -158,7 +205,7 @@ fun DatosEntregaScreen(
             texto = "Confirmar pedido",
             onClick = {
                 if (datosValidos) {
-                    onConfirmarPedido(direccion, referencia, metodoPago)
+                    onConfirmarPedido(direccion, referencia, metodoPago, total)
                 } else {
                     intentoEnviar = true
                 }
@@ -174,9 +221,9 @@ fun DatosEntregaScreen(
 private fun DatosEntregaPreview() {
     BodegaTheme {
         DatosEntregaScreen(
-            total = 25.90,
+            subtotal = 25.90,
             onVolver = {},
-            onConfirmarPedido = { _, _, _ -> }
+            onConfirmarPedido = { _, _, _, _ -> }
         )
     }
 }

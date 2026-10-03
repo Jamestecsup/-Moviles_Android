@@ -82,11 +82,18 @@ fun InicioScreen(
     var tab by remember { mutableStateOf(0) }
     var categoriaSeleccionada by remember { mutableStateOf(listaCategorias.first()) }
     var textoBusqueda by remember { mutableStateOf("") }
+    var ordenMenorPrimero by remember { mutableStateOf<Boolean?>(null) }
 
     val productosFiltrados = productos.filter { producto ->
         val coincideCategoria = categoriaSeleccionada == "Todos" || producto.categoria == categoriaSeleccionada
         val coincideBusqueda = producto.nombre.contains(textoBusqueda, ignoreCase = true)
         coincideCategoria && coincideBusqueda
+    }.let { lista ->
+        when (ordenMenorPrimero) {
+            true -> lista.sortedBy { it.precio }
+            false -> lista.sortedByDescending { it.precio }
+            null -> lista
+        }
     }
 
     Scaffold(
@@ -144,6 +151,10 @@ fun InicioScreen(
                     onCategoriaClick = { categoriaSeleccionada = it },
                     textoBusqueda = textoBusqueda,
                     onBusquedaCambia = { textoBusqueda = it },
+                    ordenMenorPrimero = ordenMenorPrimero,
+                    onOrdenClick = {
+                        ordenMenorPrimero = if (ordenMenorPrimero == it) null else it
+                    },
                     onProductoClick = onProductoClick,
                     onAgregarProducto = onAgregarProducto,
                     favoritosIds = favoritosIds,
@@ -161,6 +172,8 @@ private fun ContenidoInicio(
     onCategoriaClick: (String) -> Unit,
     textoBusqueda: String,
     onBusquedaCambia: (String) -> Unit,
+    ordenMenorPrimero: Boolean?,
+    onOrdenClick: (Boolean?) -> Unit,
     onProductoClick: (Producto) -> Unit,
     onAgregarProducto: (Producto) -> Unit,
     favoritosIds: Set<Int>,
@@ -206,6 +219,22 @@ private fun ContenidoInicio(
                     onClick = { onCategoriaClick(categoria) }
                 )
             }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(bottom = 4.dp)
+        ) {
+            ChipCategoria(
+                texto = "Menor precio",
+                seleccionado = ordenMenorPrimero == true,
+                onClick = { onOrdenClick(true) }
+            )
+            ChipCategoria(
+                texto = "Mayor precio",
+                seleccionado = ordenMenorPrimero == false,
+                onClick = { onOrdenClick(false) }
+            )
         }
 
         LazyVerticalGrid(

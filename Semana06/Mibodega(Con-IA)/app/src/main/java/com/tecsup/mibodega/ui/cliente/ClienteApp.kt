@@ -28,8 +28,6 @@ import com.tecsup.mibodega.ui.cliente.screens.login.LoginScreen
 import com.tecsup.mibodega.ui.cliente.screens.pedidos.MisPedidosScreen
 import com.tecsup.mibodega.ui.cliente.screens.registro.RegistroScreen
 
-private const val COSTO_DELIVERY = 4.00
-
 /**
  * "Director de orquesta" de la app cliente:
  * - Tiene el NavHost con las rutas de cada pantalla.
@@ -72,7 +70,7 @@ fun ClienteApp() {
     var ultimoPedido by remember { mutableStateOf<PedidoConfirmado?>(null) }
     // El historial que muestra Mis pedidos.
     val historialPedidos = remember { mutableStateListOf<PedidoConfirmado>() }
-    val totalPedido = carrito.sumOf { it.producto.precio * it.cantidad } + COSTO_DELIVERY
+    val subtotalPedido = carrito.sumOf { it.producto.precio * it.cantidad }
 
     NavHost(
         navController = navController,
@@ -200,15 +198,15 @@ fun ClienteApp() {
 
         composable(Rutas.ENTREGA) {
             DatosEntregaScreen(
-                total = totalPedido,
+                subtotal = subtotalPedido,
                 nombreInicial = nombreRegistro,
                 telefonoInicial = telefonoRegistro,
                 direccionInicial = direccionRegistro,
                 onVolver = { navController.popBackStack() },
-                onConfirmarPedido = { direccion, referencia, metodoPago ->
+                onConfirmarPedido = { direccion, referencia, metodoPago, total ->
                     ultimoPedido = PedidoConfirmado(
                         numero = (1000..9999).random().toString(),
-                        total = totalPedido,
+                        total = total,
                         metodoPago = metodoPago,
                         direccion = direccion,
                         referencia = referencia

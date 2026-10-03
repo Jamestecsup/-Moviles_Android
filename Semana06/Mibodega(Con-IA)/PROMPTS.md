@@ -23,6 +23,11 @@
 - **Prompt**:
   > "Crea `MisPedidosScreen.kt` con un `LazyColumn` del historial (`numero`, total, método y dirección) y mensaje si está vacío. Guarda cada confirmado en un `mutableStateListOf` en `ClienteApp.kt`, agrega la ruta `pedidos` y lleva ahí la pestaña Pedidos del `NavigationBar` (el carrito queda en el icono de la topBar)."
 
+## Prompt 6: Orden por precio y recojo o delivery
+- **Fecha**: 2026-10-03
+- **Prompt**:
+  > "Ordena el grid de Inicio por precio con dos chips (`Menor precio` / `Mayor precio` usando `sortedBy` y `sortedByDescending`, se apagan al repetir). En `DatosEntregaScreen.kt` agrega `RadioButton` de Recojo en tienda (gratis) o Delivery (S/ 4.00) que cambie el total, pasando el `subtotal` y devolviendo el total final en `onConfirmarPedido`."
+
 ## Prompt 5: Favoritos con corazón y su pantalla
 - **Fecha**: 2026-10-03
 - **Prompt**:
