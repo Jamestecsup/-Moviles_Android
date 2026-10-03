@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,6 +81,15 @@ fun PantallaPrincipal(){
     var destinoActual by remember { mutableStateOf(DestinoNavegacion.INICIO) }
     val productosCarrito = remember { mutableStateListOf<Producto>() }
     val productosFavoritos = remember { mutableStateListOf<Producto>() }
+    val agregarAlCarrito: (Producto) -> Unit = { nuevoProducto ->
+        val index = productosCarrito.indexOfFirst{ it.nombre == nuevoProducto.nombre }
+        if(index != -1){
+            val existente = productosCarrito[index]
+            productosCarrito[index] = existente.copy(cantidad = existente.cantidad + 1)
+        }else{
+            productosCarrito.add(nuevoProducto)
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -198,15 +208,7 @@ fun PantallaPrincipal(){
                 when(destinoActual){
                     DestinoNavegacion.INICIO -> {
                         PantallaInicio(
-                            onAgregarAlCarrito = { nuevoProducto ->
-                                val index = productosCarrito.indexOfFirst{ it.nombre == nuevoProducto.nombre }
-                                if(index != -1){
-                                    val existente = productosCarrito[index]
-                                    productosCarrito[index] = existente.copy(cantidad = existente.cantidad + 1)
-                                }else{
-                                    productosCarrito.add(nuevoProducto)
-                                }
-                            },
+                            onAgregarAlCarrito = agregarAlCarrito,
                             onFavoritoClick = { producto ->
                                 if(productosFavoritos.none{ it.nombre == producto.nombre }){
                                     productosFavoritos.add(producto)
@@ -226,7 +228,8 @@ fun PantallaPrincipal(){
                     }
                     DestinoNavegacion.FAVORITOS -> {
                         PantallaFavoritos(
-                            favoritos = productosFavoritos
+                            favoritos = productosFavoritos,
+                            onAgregarAlCarrito = agregarAlCarrito
                         )
                     }
                     DestinoNavegacion.PERFIL -> {
@@ -245,7 +248,8 @@ fun PantallaPrincipal(){
 
 @Composable
 fun PantallaFavoritos(
-    favoritos: List<Producto>
+    favoritos: List<Producto>,
+    onAgregarAlCarrito: (Producto) -> Unit = {}
 ){
     Column(
         modifier = Modifier
@@ -297,6 +301,12 @@ fun PantallaFavoritos(
                                 contentDescription = "Favorito",
                                 tint = Color.Red
                             )
+                            Button(
+                                onClick = { onAgregarAlCarrito(producto) },
+                                modifier = Modifier.padding(start = 8.dp)
+                            ){
+                                Text("Agregar")
+                            }
                         }
                     }
                 }
