@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,36 +32,34 @@ import com.huaman.lab04_carrito_huaman.components.TarjetaProducto
 import com.huaman.lab04_carrito_huaman.model.Producto
 
 @Composable
-fun PantallaCarrito() {
+fun PantallaCarrito(
+    productos: SnapshotStateList<Producto> = remember { mutableStateListOf() }
+){
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
-    val productos = remember { mutableStateListOf<Producto>() }
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
     val subtotal = productos.sumOf { it.precio * it.cantidad }
     val igv = subtotal * 0.18
     val total = subtotal + igv
-
-    val descuentoPorcentaje = when {
+    val descuentoPorcentaje = when{
         total > 5000 -> 0.10
         total > 3000 -> 0.05
         else -> 0.0
     }
-
     val descuento = total * descuentoPorcentaje
     val totalFinal = total - descuento
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-    ) {
+    ){
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.primary)
                 .padding(16.dp)
-        ) {
+        ){
             Text(
                 text = "Carrito Tecsup",
                 style = MaterialTheme.typography.headlineMedium,
@@ -68,24 +67,21 @@ fun PantallaCarrito() {
                 color = Color.White
             )
         }
-
         TextField(
             value = nombre,
             onValueChange = { nombre = it },
             label = { Text("Nombre") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Row(
             modifier = Modifier.fillMaxWidth()
-        ) {
+        ){
             TextField(
                 value = precio,
                 onValueChange = { precio = it },
                 label = { Text("Precio") },
                 modifier = Modifier.weight(1f)
             )
-
             TextField(
                 value = cantidad,
                 onValueChange = { cantidad = it },
@@ -93,122 +89,119 @@ fun PantallaCarrito() {
                 modifier = Modifier.weight(1f)
             )
         }
-
         Button(
             onClick = {
                 val precioNum = precio.toDoubleOrNull() ?: 0.0
                 val cantidadNum = cantidad.toIntOrNull() ?: 0
-
-                if (nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0) {
-                    productos.add(
-                        Producto(nombre, precioNum, cantidadNum)
-                    )
+                if(nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0){
+                    productos.add(Producto(nombre, precioNum, cantidadNum))
                     nombre = ""
                     precio = ""
                     cantidad = ""
                 }
             },
             modifier = Modifier.fillMaxWidth()
-        ) {
+        ){
             Text("AGREGAR")
         }
-
-        if (productos.isEmpty()) {
+        if(productos.isEmpty()){
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 contentAlignment = Alignment.Center
-            ) {
+            ){
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                ){
                     Text(
                         text = "No hay productos",
                         color = Color.Gray
                     )
-
                     Text(
                         text = "Agrega productos",
                         color = Color.Gray
                     )
                 }
             }
-        } else {
+        }else{
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(productos) { producto ->
+            ){
+                items(productos){ producto ->
                     TarjetaProducto(
                         producto = producto,
+                        onAumentar = {
+                            val index = productos.indexOf(producto)
+                            if(index != -1){
+                                productos[index] = producto.copy(cantidad = producto.cantidad + 1)
+                            }
+                        },
+                        onDisminuir = {
+                            val index = productos.indexOf(producto)
+                            if(index != -1 && producto.cantidad > 1){
+                                productos[index] = producto.copy(cantidad = producto.cantidad - 1)
+                            }
+                        },
                         onEliminar = { productoAEliminar = producto }
                     )
                 }
             }
         }
-
         Text("Productos: ${productos.size}")
-
         Column(
             modifier = Modifier.fillMaxWidth()
-        ) {
+        ){
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            ){
                 Text("Subtotal")
                 Text("S/ %.2f".format(subtotal))
             }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            ){
                 Text("IGV (18%)")
                 Text("S/ %.2f".format(igv))
             }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            ){
                 Text(
                     text = "TOTAL",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
-
                 Text(
                     text = "S/ %.2f".format(total),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            if (descuentoPorcentaje > 0) {
+            if(descuentoPorcentaje > 0){
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                ){
                     Text("Descuento")
-
                     Text(
                         text = "- S/ %.2f".format(descuento)
                     )
                 }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                ){
                     Text(
                         text = "TOTAL FINAL",
                         fontWeight = FontWeight.Bold
                     )
-
                     Text(
                         text = "S/ %.2f".format(totalFinal),
                         fontWeight = FontWeight.Bold
@@ -217,8 +210,7 @@ fun PantallaCarrito() {
             }
         }
     }
-
-    if (productoAEliminar != null) {
+    if(productoAEliminar != null){
         AlertDialog(
             onDismissRequest = { productoAEliminar = null },
             title = {
@@ -233,7 +225,7 @@ fun PantallaCarrito() {
                         productos.remove(productoAEliminar)
                         productoAEliminar = null
                     }
-                ) {
+                ){
                     Text("Eliminar")
                 }
             },
@@ -242,7 +234,7 @@ fun PantallaCarrito() {
                     onClick = {
                         productoAEliminar = null
                     }
-                ) {
+                ){
                     Text("Cancelar")
                 }
             }
