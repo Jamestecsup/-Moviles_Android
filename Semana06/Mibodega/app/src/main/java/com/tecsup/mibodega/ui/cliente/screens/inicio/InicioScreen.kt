@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -98,7 +100,11 @@ fun InicioScreen(
                 }
             )
         },
-        bottomBar = { BarraInferior() }
+        bottomBar = {
+            BarraInferior(
+                onPedidosClick = onVerCarrito
+            )
+        }
     ) { paddingInterno ->
         Column(
             modifier = Modifier
@@ -184,8 +190,11 @@ private fun ChipCategoria(
 }
 
 @Composable
-private fun BarraInferior() {
+private fun BarraInferior(
+    onPedidosClick: () -> Unit = {}
+) {
     var seleccionado by remember { mutableStateOf(0) }
+    var mostrarAviso by remember { mutableStateOf(false) }
     val items = listOf(
         Triple("Inicio", Icons.Default.Home, 0),
         Triple("Categorías", Icons.Default.List, 1),
@@ -196,7 +205,13 @@ private fun BarraInferior() {
         items.forEach { (etiqueta, icono, indice) ->
             NavigationBarItem(
                 selected = seleccionado == indice,
-                onClick = { seleccionado = indice },
+                onClick = {
+                    seleccionado = indice
+                    when (indice) {
+                        2 -> onPedidosClick()
+                        1, 3 -> mostrarAviso = true
+                    }
+                },
                 icon = { Icon(icono, contentDescription = etiqueta) },
                 label = { Text(etiqueta) },
                 colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
@@ -205,6 +220,19 @@ private fun BarraInferior() {
                 )
             )
         }
+    }
+
+    if (mostrarAviso) {
+        AlertDialog(
+            onDismissRequest = { mostrarAviso = false },
+            confirmButton = {
+                TextButton(onClick = { mostrarAviso = false }) {
+                    Text("Entendido")
+                }
+            },
+            title = { Text("Próximamente") },
+            text = { Text("Esta sección aún no está disponible en la Fase 1.") }
+        )
     }
 }
 
