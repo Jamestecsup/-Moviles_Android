@@ -146,6 +146,11 @@ fun PantallaPrincipal(){
                                     Text("${productosCarrito.size}")
                                 }
                             }
+                            if(destino == DestinoNavegacion.FAVORITOS && productosFavoritos.isNotEmpty()){
+                                Badge{
+                                    Text("${productosFavoritos.size}")
+                                }
+                            }
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
