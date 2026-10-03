@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.mibodega.ui.cliente.modelo.ItemCarrito
+import com.tecsup.mibodega.ui.cliente.modelo.DatosCuenta
 import com.tecsup.mibodega.ui.cliente.modelo.PedidoConfirmado
 import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
@@ -56,6 +57,9 @@ fun ClienteApp() {
     var nombreRegistro by remember { mutableStateOf("") }
     var telefonoRegistro by remember { mutableStateOf("") }
     var direccionRegistro by remember { mutableStateOf("") }
+    // La cuenta que se muestra en Perfil: sale del registro
+    // o del teléfono con el que se ingresó.
+    var cuenta by remember { mutableStateOf<DatosCuenta?>(null) }
     // El último pedido confirmado, lo lee la Confirmación.
     var ultimoPedido by remember { mutableStateOf<PedidoConfirmado?>(null) }
     val totalPedido = carrito.sumOf { it.producto.precio * it.cantidad } + COSTO_DELIVERY
@@ -75,7 +79,14 @@ fun ClienteApp() {
         composable(Rutas.LOGIN) {
             LoginScreen(
                 onVolver = { navController.popBackStack() },
-                onIngresar = {
+                onIngresar = { telefono ->
+                    if (cuenta?.telefono != telefono) {
+                        cuenta = DatosCuenta(
+                            nombre = "Invitado",
+                            telefono = telefono,
+                            direccion = "Sin dirección registrada"
+                        )
+                    }
                     navController.navigate(Rutas.INICIO) {
                         popUpTo(Rutas.BIENVENIDA) { inclusive = true }
                     }
@@ -91,6 +102,11 @@ fun ClienteApp() {
                     nombreRegistro = nombre
                     telefonoRegistro = telefono
                     direccionRegistro = direccion
+                    cuenta = DatosCuenta(
+                        nombre = nombre,
+                        telefono = telefono,
+                        direccion = direccion
+                    )
                     navController.navigate(Rutas.INICIO) {
                         popUpTo(Rutas.BIENVENIDA) { inclusive = true }
                     }
@@ -101,6 +117,7 @@ fun ClienteApp() {
         composable(Rutas.INICIO) {
             InicioScreen(
                 cantidadCarrito = carrito.sumOf { it.cantidad },
+                cuenta = cuenta,
                 onVerCarrito = { navController.navigate(Rutas.CARRITO) },
                 onProductoClick = { producto ->
                     navController.navigate(Rutas.detalle(producto.id))
