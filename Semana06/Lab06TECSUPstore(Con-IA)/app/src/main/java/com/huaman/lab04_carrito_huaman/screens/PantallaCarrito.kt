@@ -1,6 +1,5 @@
 package com.huaman.lab04_carrito_huaman.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -36,10 +34,8 @@ fun PantallaCarrito(
     productos: SnapshotStateList<Producto> = remember { mutableStateListOf() },
     onFavoritoClick: (Producto) -> Unit = {}
 ){
-    var nombre by remember { mutableStateOf("") }
-    var precio by remember { mutableStateOf("") }
-    var cantidad by remember { mutableStateOf("") }
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
+    var mostrarCompraExitosa by remember { mutableStateOf(false) }
     val subtotal = productos.sumOf { it.precio * it.cantidad }
     val igv = subtotal * 0.18
     val total = subtotal + igv
@@ -55,56 +51,6 @@ fun PantallaCarrito(
             .fillMaxSize()
             .padding(16.dp)
     ){
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(16.dp)
-        ){
-            Text(
-                text = "Carrito Tecsup",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
-        TextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ){
-            TextField(
-                value = precio,
-                onValueChange = { precio = it },
-                label = { Text("Precio") },
-                modifier = Modifier.weight(1f)
-            )
-            TextField(
-                value = cantidad,
-                onValueChange = { cantidad = it },
-                label = { Text("Cantidad") },
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Button(
-            onClick = {
-                val precioNum = precio.toDoubleOrNull() ?: 0.0
-                val cantidadNum = cantidad.toIntOrNull() ?: 0
-                if(nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0){
-                    productos.add(Producto(nombre, precioNum, cantidadNum))
-                    nombre = ""
-                    precio = ""
-                    cantidad = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ){
-            Text("AGREGAR")
-        }
         if(productos.isEmpty()){
             Box(
                 modifier = Modifier
@@ -152,6 +98,13 @@ fun PantallaCarrito(
                     )
                 }
             }
+        }
+        Button(
+            onClick = { mostrarCompraExitosa = true },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = productos.isNotEmpty()
+        ){
+            Text("Finalizar compra")
         }
         Text("Productos: ${productos.size}")
         Column(
@@ -238,6 +191,27 @@ fun PantallaCarrito(
                     }
                 ){
                     Text("Cancelar")
+                }
+            }
+        )
+    }
+    if(mostrarCompraExitosa){
+        AlertDialog(
+            onDismissRequest = { mostrarCompraExitosa = false },
+            title = {
+                Text("Compra exitosa")
+            },
+            text = {
+                Text("Tu pedido fue registrado. Gracias por comprar en TECSUP Store.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        productos.clear()
+                        mostrarCompraExitosa = false
+                    }
+                ){
+                    Text("Aceptar")
                 }
             }
         )
