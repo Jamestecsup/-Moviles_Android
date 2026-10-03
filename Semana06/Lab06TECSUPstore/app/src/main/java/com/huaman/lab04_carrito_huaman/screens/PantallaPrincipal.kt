@@ -34,7 +34,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -132,10 +131,29 @@ fun PantallaPrincipal(){
                     .fillMaxSize()
                     .padding(paddingValores)
             ){
-                Text(
-                    text = destinoActual.titulo,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                when(destinoActual){
+                    DestinoNavegacion.INICIO -> {
+                        PantallaInicio(
+                            onAgregarAlCarrito = { nuevoProducto ->
+                                val index = productosCarrito.indexOfFirst{ it.nombre == nuevoProducto.nombre }
+                                if(index != -1){
+                                    val existente = productosCarrito[index]
+                                    productosCarrito[index] = existente.copy(cantidad = existente.cantidad + 1)
+                                }else{
+                                    productosCarrito.add(nuevoProducto)
+                                }
+                            }
+                        )
+                    }
+                    DestinoNavegacion.CARRITO -> {
+                        PantallaCarrito(
+                            productos = productosCarrito
+                        )
+                    }
+                    DestinoNavegacion.PERFIL -> {
+                        PantallaPerfil()
+                    }
+                }
             }
         }
     }
