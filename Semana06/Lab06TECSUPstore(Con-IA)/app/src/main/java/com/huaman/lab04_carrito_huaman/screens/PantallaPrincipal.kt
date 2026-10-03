@@ -15,11 +15,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
@@ -63,10 +65,11 @@ enum class DestinoNavegacion(
     val iconoSeleccionado: ImageVector,
     val iconoNoSeleccionado: ImageVector
 ){
-    INICIO("Inicio / Catálogo", Icons.Filled.Home, Icons.Outlined.Home),
-    CARRITO("Carrito de Compras", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
+    INICIO("Inicio", Icons.Filled.Home, Icons.Outlined.Home),
+    PEDIDOS("Mis pedidos", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
     FAVORITOS("Favoritos", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
-    PERFIL("Mi Perfil", Icons.Filled.Person, Icons.Outlined.Person)
+    PERFIL("Perfil", Icons.Filled.Person, Icons.Outlined.Person),
+    CERRAR_SESION("Cerrar sesión", Icons.Filled.Close, Icons.Outlined.Close)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +77,7 @@ enum class DestinoNavegacion(
 fun PantallaPrincipal(){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var destinoActual by remember { mutableStateOf(DestinoNavegacion.CARRITO) }
+    var destinoActual by remember { mutableStateOf(DestinoNavegacion.INICIO) }
     val productosCarrito = remember { mutableStateListOf<Producto>() }
     val productosFavoritos = remember { mutableStateListOf<Producto>() }
 
@@ -88,33 +91,37 @@ fun PantallaPrincipal(){
                         .background(MaterialTheme.colorScheme.primaryContainer)
                         .padding(20.dp)
                 ){
-                    Column{
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(50.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ){
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Avatar",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(40.dp)
+                            Text(
+                                text = "MR",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Estudiante TECSUP",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Text(
-                            text = "estudiante@tecsup.edu.pe",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                        )
+                        Spacer(modifier = Modifier.padding(8.dp))
+                        Column{
+                            Text(
+                                text = "Maria Rojas",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "maria@tecsup.edu.pe",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
                 HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
@@ -141,11 +148,6 @@ fun PantallaPrincipal(){
                             )
                         },
                         badge = {
-                            if(destino == DestinoNavegacion.CARRITO && productosCarrito.isNotEmpty()){
-                                Badge{
-                                    Text("${productosCarrito.size}")
-                                }
-                            }
                             if(destino == DestinoNavegacion.FAVORITOS && productosFavoritos.isNotEmpty()){
                                 Badge{
                                     Text("${productosFavoritos.size}")
@@ -212,7 +214,7 @@ fun PantallaPrincipal(){
                             }
                         )
                     }
-                    DestinoNavegacion.CARRITO -> {
+                    DestinoNavegacion.PEDIDOS -> {
                         PantallaCarrito(
                             productos = productosCarrito,
                             onFavoritoClick = { producto ->
@@ -229,6 +231,11 @@ fun PantallaPrincipal(){
                     }
                     DestinoNavegacion.PERFIL -> {
                         PantallaPerfil()
+                    }
+                    DestinoNavegacion.CERRAR_SESION -> {
+                        PantallaLogin(
+                            onEntrar = { destinoActual = DestinoNavegacion.INICIO }
+                        )
                     }
                 }
             }
