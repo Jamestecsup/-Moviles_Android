@@ -3,6 +3,7 @@ package com.tecsup.mibodega.ui.cliente.screens.inicio
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,7 +15,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -45,8 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.DatosCuenta
+import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.listaCategorias
 import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
 import com.tecsup.mibodega.ui.cliente.screens.categorias.CategoriasScreen
@@ -58,8 +58,8 @@ import com.tecsup.mibodega.ui.theme.VerdeBodega
 
 /**
  * Pantalla 3: Inicio / Productos (mockup "Cliente").
- * La más completa: Scaffold (topBar + bottomBar), LazyRow de categorías
- * y LazyVerticalGrid de productos.
+ * Scaffold (topBar + bottomBar) y 3 pestañas: inicio con
+ * LazyRow de categorías y LazyVerticalGrid, categorías y perfil.
  *
  * @param productos lista completa (fake por ahora, luego vendrá de un ViewModel)
  * @param cantidadCarrito para el badge del carrito en la topBar
@@ -116,72 +116,98 @@ fun InicioScreen(
             )
         }
     ) { paddingInterno ->
-        when (tab) {
-            1 -> CategoriasScreen(
-                onAgregarProducto = onAgregarProducto
-            )
-            3 -> PerfilScreen(
-                cuenta = cuenta
-            )
-            else -> Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingInterno)
-                .padding(horizontal = 16.dp)
         ) {
-            OutlinedTextField(
-                value = textoBusqueda,
-                onValueChange = { textoBusqueda = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                placeholder = { Text("Buscar productos...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = GrisClaro,
-                    focusedContainerColor = GrisClaro,
-                    unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                    focusedBorderColor = VerdeBodega
+            when (tab) {
+                1 -> CategoriasScreen(
+                    onAgregarProducto = onAgregarProducto
                 )
-            )
-
-            Text(
-                text = "Productos destacados",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 20.dp, bottom = 4.dp)
-            )
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                items(listaCategorias) { categoria ->
-                    ChipCategoria(
-                        texto = categoria,
-                        seleccionado = categoria == categoriaSeleccionada,
-                        onClick = { categoriaSeleccionada = categoria }
-                    )
-                }
-            }
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(vertical = 12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(productosFiltrados) { producto ->
-                    ProductoCard(
-                        producto = producto,
-                        onClick = { onProductoClick(producto) },
-                        onAgregar = { onAgregarProducto(producto) }
-                    )
-                }
+                3 -> PerfilScreen(
+                    cuenta = cuenta
+                )
+                else -> ContenidoInicio(
+                    productosFiltrados = productosFiltrados,
+                    categoriaSeleccionada = categoriaSeleccionada,
+                    onCategoriaClick = { categoriaSeleccionada = it },
+                    textoBusqueda = textoBusqueda,
+                    onBusquedaCambia = { textoBusqueda = it },
+                    onProductoClick = onProductoClick,
+                    onAgregarProducto = onAgregarProducto
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun ContenidoInicio(
+    productosFiltrados: List<Producto>,
+    categoriaSeleccionada: String,
+    onCategoriaClick: (String) -> Unit,
+    textoBusqueda: String,
+    onBusquedaCambia: (String) -> Unit,
+    onProductoClick: (Producto) -> Unit,
+    onAgregarProducto: (Producto) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        OutlinedTextField(
+            value = textoBusqueda,
+            onValueChange = onBusquedaCambia,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            placeholder = { Text("Buscar productos...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = GrisClaro,
+                focusedContainerColor = GrisClaro,
+                unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                focusedBorderColor = VerdeBodega
+            )
+        )
+
+        Text(
+            text = "Productos destacados",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(top = 20.dp, bottom = 4.dp)
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(listaCategorias) { categoria ->
+                ChipCategoria(
+                    texto = categoria,
+                    seleccionado = categoria == categoriaSeleccionada,
+                    onClick = { onCategoriaClick(categoria) }
+                )
+            }
+        }
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(vertical = 12.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(productosFiltrados) { producto ->
+                ProductoCard(
+                    producto = producto,
+                    onClick = { onProductoClick(producto) },
+                    onAgregar = { onAgregarProducto(producto) }
+                )
+            }
         }
     }
 }
