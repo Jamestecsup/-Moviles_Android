@@ -1,5 +1,7 @@
 package com.tecsup.mibodega.ui.cliente
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -52,7 +54,10 @@ private object Rutas {
 }
 
 @Composable
-fun ClienteApp() {
+fun ClienteApp(
+    modoOscuro: Boolean = false,
+    onModoOscuro: (Boolean) -> Unit = {}
+) {
     val navController = rememberNavController()
 
     // El carrito vive aquí arriba, no en ninguna Screen.
@@ -74,7 +79,11 @@ fun ClienteApp() {
 
     NavHost(
         navController = navController,
-        startDestination = Rutas.BIENVENIDA
+        startDestination = Rutas.BIENVENIDA,
+        enterTransition = { fadeIn() },
+        exitTransition = { fadeOut() },
+        popEnterTransition = { fadeIn() },
+        popExitTransition = { fadeOut() }
     ) {
         composable(Rutas.BIENVENIDA) {
             BienvenidaScreen(
@@ -127,6 +136,8 @@ fun ClienteApp() {
                 cantidadCarrito = carrito.sumOf { it.cantidad },
                 cuenta = cuenta,
                 favoritosIds = favoritosIds,
+                modoOscuro = modoOscuro,
+                onModoOscuro = onModoOscuro,
                 onVerCarrito = { navController.navigate(Rutas.CARRITO) },
                 onVerPedidos = { navController.navigate(Rutas.PEDIDOS) },
                 onVerFavoritos = { navController.navigate(Rutas.FAVORITOS) },

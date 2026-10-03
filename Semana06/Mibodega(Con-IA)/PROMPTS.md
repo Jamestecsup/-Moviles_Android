@@ -28,6 +28,11 @@
 - **Prompt**:
   > "Ordena el grid de Inicio por precio con dos chips (`Menor precio` / `Mayor precio` usando `sortedBy` y `sortedByDescending`, se apagan al repetir). En `DatosEntregaScreen.kt` agrega `RadioButton` de Recojo en tienda (gratis) o Delivery (S/ 4.00) que cambie el total, pasando el `subtotal` y devolviendo el total final en `onConfirmarPedido`."
 
+## Prompt 7: Modo oscuro y animación entre pantallas
+- **Fecha**: 2026-10-03
+- **Prompt**:
+  > "Agrega modo oscuro con un `Switch` en `PerfilScreen.kt` usando `darkColorScheme` en `Theme.kt` (con `darkTheme` en `BodegaTheme`), pasando el estado desde `MainActivity.kt`. Y anima el cambio de pantalla con `fadeIn` y `fadeOut` en el `NavHost` de `ClienteApp.kt`."
+
 ## Prompt 5: Favoritos con corazón y su pantalla
 - **Fecha**: 2026-10-03
 - **Prompt**:

@@ -72,6 +72,8 @@ fun InicioScreen(
     cantidadCarrito: Int,
     cuenta: DatosCuenta? = null,
     favoritosIds: Set<Int> = emptySet(),
+    modoOscuro: Boolean = false,
+    onModoOscuro: (Boolean) -> Unit = {},
     onVerCarrito: () -> Unit,
     onVerPedidos: () -> Unit = {},
     onVerFavoritos: () -> Unit = {},
@@ -143,7 +145,9 @@ fun InicioScreen(
                     onFavoritoClick = onFavoritoClick
                 )
                 3 -> PerfilScreen(
-                    cuenta = cuenta
+                    cuenta = cuenta,
+                    modoOscuro = modoOscuro,
+                    onModoOscuro = onModoOscuro
                 )
                 else -> ContenidoInicio(
                     productosFiltrados = productosFiltrados,
