@@ -16,9 +16,12 @@ import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
 import com.tecsup.mibodega.ui.cliente.screens.bienvenida.BienvenidaScreen
 import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
 import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
+import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
 import com.tecsup.mibodega.ui.cliente.screens.login.LoginScreen
 import com.tecsup.mibodega.ui.cliente.screens.registro.RegistroScreen
+
+private const val COSTO_DELIVERY = 4.00
 
 /**
  * "Director de orquesta" de la app cliente:
@@ -35,6 +38,7 @@ private object Rutas {
     const val INICIO = "inicio"
     const val DETALLE = "detalle/{productoId}"
     const val CARRITO = "carrito"
+    const val ENTREGA = "entrega"
 
     fun detalle(productoId: Int) = "detalle/$productoId"
 }
@@ -45,6 +49,11 @@ fun ClienteApp() {
 
     // El carrito vive aquí arriba, no en ninguna Screen.
     var carrito by remember { mutableStateOf<List<ItemCarrito>>(emptyList()) }
+    // Lo que se guardó del registro, para prellenar la entrega.
+    var nombreRegistro by remember { mutableStateOf("") }
+    var telefonoRegistro by remember { mutableStateOf("") }
+    var direccionRegistro by remember { mutableStateOf("") }
+    val totalPedido = carrito.sumOf { it.producto.precio * it.cantidad } + COSTO_DELIVERY
 
     NavHost(
         navController = navController,
@@ -73,8 +82,10 @@ fun ClienteApp() {
         composable(Rutas.REGISTRO) {
             RegistroScreen(
                 onVolver = { navController.popBackStack() },
-                onCrearCuenta = { nombre, telefono, direccion, referencia ->
-                    // TODO: guardar estos datos cuando exista el registro real
+                onCrearCuenta = { nombre, telefono, direccion, _ ->
+                    nombreRegistro = nombre
+                    telefonoRegistro = telefono
+                    direccionRegistro = direccion
                     navController.navigate(Rutas.INICIO) {
                         popUpTo(Rutas.BIENVENIDA) { inclusive = true }
                     }
@@ -133,7 +144,18 @@ fun ClienteApp() {
                 onEliminar = { producto ->
                     carrito = carrito.filterNot { it.producto.id == producto.id }
                 },
-                onContinuarPedido = { /* TODO: navegar a DatosEntregaScreen */ }
+                onContinuarPedido = { navController.navigate(Rutas.ENTREGA) }
+            )
+        }
+
+        composable(Rutas.ENTREGA) {
+            DatosEntregaScreen(
+                total = totalPedido,
+                nombreInicial = nombreRegistro,
+                telefonoInicial = telefonoRegistro,
+                direccionInicial = direccionRegistro,
+                onVolver = { navController.popBackStack() },
+                onConfirmarPedido = { _, _, _ -> }
             )
         }
     }
