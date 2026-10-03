@@ -1,24 +1,31 @@
 package com.huaman.lab04_carrito_huaman.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -44,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -57,6 +65,7 @@ enum class DestinoNavegacion(
 ){
     INICIO("Inicio / Catálogo", Icons.Filled.Home, Icons.Outlined.Home),
     CARRITO("Carrito de Compras", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
+    FAVORITOS("Favoritos", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
     PERFIL("Mi Perfil", Icons.Filled.Person, Icons.Outlined.Person)
 }
 
@@ -67,6 +76,7 @@ fun PantallaPrincipal(){
     val scope = rememberCoroutineScope()
     var destinoActual by remember { mutableStateOf(DestinoNavegacion.CARRITO) }
     val productosCarrito = remember { mutableStateListOf<Producto>() }
+    val productosFavoritos = remember { mutableStateListOf<Producto>() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -194,11 +204,83 @@ fun PantallaPrincipal(){
                     }
                     DestinoNavegacion.CARRITO -> {
                         PantallaCarrito(
-                            productos = productosCarrito
+                            productos = productosCarrito,
+                            onFavoritoClick = { producto ->
+                                if(productosFavoritos.none{ it.nombre == producto.nombre }){
+                                    productosFavoritos.add(producto)
+                                }
+                            }
+                        )
+                    }
+                    DestinoNavegacion.FAVORITOS -> {
+                        PantallaFavoritos(
+                            favoritos = productosFavoritos
                         )
                     }
                     DestinoNavegacion.PERFIL -> {
                         PantallaPerfil()
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PantallaFavoritos(
+    favoritos: List<Producto>
+){
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ){
+        Text(
+            text = "Mis Favoritos",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+        if(favoritos.isEmpty()){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ){
+                Text("No tienes favoritos", color = Color.Gray)
+            }
+        }else{
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ){
+                items(favoritos){ producto ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Row(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Column(modifier = Modifier.weight(1f)){
+                                Text(
+                                    text = producto.nombre,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "S/ %.2f".format(producto.precio),
+                                    color = Color.Gray
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "Favorito",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             }
