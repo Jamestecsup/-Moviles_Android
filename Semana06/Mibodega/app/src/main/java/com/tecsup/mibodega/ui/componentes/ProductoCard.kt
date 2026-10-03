@@ -71,24 +71,26 @@ fun ProductoCard(
 
             Spacer(Modifier.height(8.dp))
 
-            Text(
-                text = producto.nombre,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "S/ %.2f".format(producto.precio),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = VerdeBodega
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = producto.nombre,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false
+                    )
+                    Text(
+                        text = "S/ %.2f".format(producto.precio),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = VerdeBodega
+                    )
+                }
                 IconButton(
                     onClick = onAgregar,
                     modifier = Modifier
