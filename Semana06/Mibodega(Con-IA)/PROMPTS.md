@@ -12,3 +12,8 @@
 - **Fecha**: 2026-10-03
 - **Prompt**:
   > "Agrega `esError` a `CampoTexto.kt` con `isError` y mensaje 'Completa este campo'. En Registro, Entrega y Login marca en rojo los vacíos al intentar enviar (`intentoEnviar`) y no avances hasta que estén llenos."
+
+## Prompt 3: Carrito vacío y confirmar antes de eliminar
+- **Fecha**: 2026-10-03
+- **Prompt**:
+  > "En `CarritoScreen.kt` muestra 'Tu carrito está vacío' cuando no hay productos (ocultando el resumen) y pide confirmación con un `AlertDialog` antes de eliminar un producto."
