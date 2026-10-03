@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,67 +36,85 @@ fun TarjetaProducto(
     onAumentar: () -> Unit = {},
     onDisminuir: () -> Unit = {},
     onEliminar: () -> Unit
-) {
+){
     var expanded by remember { mutableStateOf(false) }
-
     Card(
         modifier = Modifier.fillMaxWidth()
-    ) {
+    ){
         Row(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
-        ) {
+        ){
             Column(
                 modifier = Modifier.weight(1f)
-            ) {
+            ){
                 Text(
                     text = producto.nombre,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-
                 Text(
                     text = "S/ %.2f x %d".format(producto.precio, producto.cantidad),
                     color = Color.Gray
                 )
             }
-
             Text(
                 text = "S/ %.2f".format(producto.precio * producto.cantidad)
             )
-
-            Box {
-                IconButton(onClick = { expanded = !expanded }) {
+            Box{
+                IconButton(onClick = { expanded = !expanded }){
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Opciones del producto"
                     )
                 }
-
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
-                ) {
+                ){
                     DropdownMenuItem(
                         text = { Text("Aumentar cantidad") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Aumentar"
+                            )
+                        },
                         onClick = {
                             expanded = false
                             onAumentar()
                         }
                     )
-
                     DropdownMenuItem(
                         text = { Text("Disminuir cantidad") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "Disminuir"
+                            )
+                        },
                         onClick = {
                             expanded = false
                             onDisminuir()
                         }
                     )
-
+                    HorizontalDivider()
                     DropdownMenuItem(
-                        text = { Text("Eliminar producto") },
+                        text = {
+                            Text(
+                                text = "Eliminar producto",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
                         onClick = {
                             expanded = false
                             onEliminar()
