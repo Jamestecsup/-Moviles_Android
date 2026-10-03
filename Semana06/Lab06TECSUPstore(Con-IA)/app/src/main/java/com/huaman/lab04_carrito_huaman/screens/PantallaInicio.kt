@@ -1,6 +1,8 @@
 package com.huaman.lab04_carrito_huaman.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,15 +11,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -34,7 +46,8 @@ import com.huaman.lab04_carrito_huaman.model.Producto
 
 @Composable
 fun PantallaInicio(
-    onAgregarAlCarrito: (Producto) -> Unit = {}
+    onAgregarAlCarrito: (Producto) -> Unit = {},
+    onFavoritoClick: (Producto) -> Unit = {}
 ){
     var busqueda by remember { mutableStateOf("") }
     val productosDestacados = remember{
@@ -101,37 +114,117 @@ fun PantallaInicio(
             contentPadding = PaddingValues(bottom = 16.dp)
         ){
             items(productosFiltrados){ producto ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                TarjetaCatalogo(
+                    producto = producto,
+                    onAgregarAlCarrito = { onAgregarAlCarrito(producto) },
+                    onFavoritoClick = { onFavoritoClick(producto) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TarjetaCatalogo(
+    producto: Producto,
+    onAgregarAlCarrito: () -> Unit = {},
+    onFavoritoClick: () -> Unit = {}
+){
+    var expanded by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ){
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        RoundedCornerShape(10.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ){
+                Icon(
+                    imageVector = Icons.Default.ShoppingBag,
+                    contentDescription = producto.nombre,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+            ){
+                Text(
+                    text = producto.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "S/ %.2f".format(producto.precio),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Button(
+                onClick = onAgregarAlCarrito
+            ){
+                Text("Agregar")
+            }
+            Box{
+                IconButton(onClick = { expanded = !expanded }){
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Opciones del producto"
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
                 ){
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ){
-                        Column(modifier = Modifier.weight(1f)){
-                            Text(
-                                text = producto.nombre,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                    DropdownMenuItem(
+                        text = { Text("Favoritos") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "Favoritos"
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "S/ %.2f".format(producto.precio),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
+                        },
+                        onClick = {
+                            expanded = false
+                            onFavoritoClick()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Compartir") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Compartir"
                             )
-                        }
-                        Button(
-                            onClick = { onAgregarAlCarrito(producto) }
-                        ){
-                            Text("Agregar")
-                        }
-                    }
+                        },
+                        onClick = { expanded = false }
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("Reportar") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Report,
+                                contentDescription = "Reportar"
+                            )
+                        },
+                        onClick = { expanded = false }
+                    )
                 }
             }
         }

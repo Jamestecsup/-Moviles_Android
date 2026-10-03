@@ -204,6 +204,11 @@ fun PantallaPrincipal(){
                                 }else{
                                     productosCarrito.add(nuevoProducto)
                                 }
+                            },
+                            onFavoritoClick = { producto ->
+                                if(productosFavoritos.none{ it.nombre == producto.nombre }){
+                                    productosFavoritos.add(producto)
+                                }
                             }
                         )
                     }
