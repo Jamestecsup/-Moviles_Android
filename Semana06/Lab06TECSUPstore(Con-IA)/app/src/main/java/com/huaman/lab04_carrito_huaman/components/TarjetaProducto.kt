@@ -6,13 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Report
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,9 +33,9 @@ import com.huaman.lab04_carrito_huaman.model.Producto
 @Composable
 fun TarjetaProducto(
     producto: Producto,
-    onFavoritoClick: () -> Unit = {},
-    onCompartirClick: () -> Unit = {},
-    onReportarClick: () -> Unit = {}
+    onAumentar: () -> Unit = {},
+    onDisminuir: () -> Unit = {},
+    onEliminar: () -> Unit
 ){
     var expanded by remember { mutableStateOf(false) }
     Card(
@@ -55,10 +56,13 @@ fun TarjetaProducto(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "S/ %.2f".format(producto.precio),
+                    text = "S/ %.2f x %d".format(producto.precio, producto.cantidad),
                     color = Color.Gray
                 )
             }
+            Text(
+                text = "S/ %.2f".format(producto.precio * producto.cantidad)
+            )
             Box{
                 IconButton(onClick = { expanded = !expanded }){
                     Icon(
@@ -71,43 +75,49 @@ fun TarjetaProducto(
                     onDismissRequest = { expanded = false }
                 ){
                     DropdownMenuItem(
-                        text = { Text("Favoritos") },
+                        text = { Text("Aumentar cantidad") },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = "Favoritos",
-                                tint = Color.Red
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Aumentar"
                             )
                         },
                         onClick = {
                             expanded = false
-                            onFavoritoClick()
+                            onAumentar()
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Compartir") },
+                        text = { Text("Disminuir cantidad") },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = "Compartir"
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "Disminuir"
                             )
                         },
                         onClick = {
                             expanded = false
-                            onCompartirClick()
+                            onDisminuir()
                         }
                     )
+                    HorizontalDivider()
                     DropdownMenuItem(
-                        text = { Text("Reportar") },
+                        text = {
+                            Text(
+                                text = "Eliminar producto",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Report,
-                                contentDescription = "Reportar"
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = MaterialTheme.colorScheme.error
                             )
                         },
                         onClick = {
                             expanded = false
-                            onReportarClick()
+                            onEliminar()
                         }
                     )
                 }

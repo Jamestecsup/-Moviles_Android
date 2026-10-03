@@ -10,12 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.huaman.lab04_carrito_huaman.components.TarjetaProducto
 import com.huaman.lab04_carrito_huaman.model.Producto
 
 @Composable
@@ -52,7 +49,6 @@ fun PantallaCarrito(
     }
     val descuento = total * descuentoPorcentaje
     val totalFinal = total - descuento
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,6 +89,21 @@ fun PantallaCarrito(
                 modifier = Modifier.weight(1f)
             )
         }
+        Button(
+            onClick = {
+                val precioNum = precio.toDoubleOrNull() ?: 0.0
+                val cantidadNum = cantidad.toIntOrNull() ?: 0
+                if(nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0){
+                    productos.add(Producto(nombre, precioNum, cantidadNum))
+                    nombre = ""
+                    precio = ""
+                    cantidad = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text("AGREGAR")
+        }
         if(productos.isEmpty()){
             Box(
                 modifier = Modifier
@@ -104,7 +115,11 @@ fun PantallaCarrito(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Text(
-                        text = "No hay productos en el carrito",
+                        text = "No hay productos",
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "Agrega productos",
                         color = Color.Gray
                     )
                 }
@@ -117,41 +132,22 @@ fun PantallaCarrito(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ){
                 items(productos){ producto ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ){
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ){
-                                Text(
-                                    text = producto.nombre,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "S/ %.2f x %d".format(producto.precio, producto.cantidad),
-                                    color = Color.Gray
-                                )
+                    TarjetaProducto(
+                        producto = producto,
+                        onAumentar = {
+                            val index = productos.indexOf(producto)
+                            if(index != -1){
+                                productos[index] = producto.copy(cantidad = producto.cantidad + 1)
                             }
-                            Text(
-                                text = "S/ %.2f".format(producto.precio * producto.cantidad),
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                            IconButton(onClick = { productoAEliminar = producto }){
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Eliminar",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
+                        },
+                        onDisminuir = {
+                            val index = productos.indexOf(producto)
+                            if(index != -1 && producto.cantidad > 1){
+                                productos[index] = producto.copy(cantidad = producto.cantidad - 1)
                             }
-                        }
-                    }
+                        },
+                        onEliminar = { productoAEliminar = producto }
+                    )
                 }
             }
         }

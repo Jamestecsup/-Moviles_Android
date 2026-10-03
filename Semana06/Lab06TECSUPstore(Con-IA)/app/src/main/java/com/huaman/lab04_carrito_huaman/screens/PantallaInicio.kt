@@ -3,6 +3,7 @@ package com.huaman.lab04_carrito_huaman.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -24,25 +26,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.huaman.lab04_carrito_huaman.components.TarjetaProducto
 import com.huaman.lab04_carrito_huaman.model.Producto
 
 @Composable
 fun PantallaInicio(
-    onAgregarAlCarrito: (Producto) -> Unit = {},
-    onFavoritoClick: (Producto) -> Unit = {}
+    onAgregarAlCarrito: (Producto) -> Unit = {}
 ){
     var busqueda by remember { mutableStateOf("") }
     val productosDestacados = remember{
         listOf(
-            Producto("Audifonos", 89.00, 1),
-            Producto("Smartwatch", 199.00, 1),
-            Producto("Funda celular", 25.00, 1),
             Producto("Laptop HP Pavilion 15", 3499.00, 1),
-            Producto("Teclado Mecánico", 199.00, 1)
+            Producto("Mouse Gamer Logitech G203", 89.90, 1),
+            Producto("Teclado Mecánico Redragon", 199.00, 1),
+            Producto("Audífonos Sony WH-CH520", 159.00, 1),
+            Producto("Monitor LG UltraGear 24\"", 649.00, 1)
         )
     }
     val productosFiltrados = productosDestacados.filter{
@@ -66,14 +67,14 @@ fun PantallaInicio(
                 modifier = Modifier.padding(16.dp)
             ){
                 Text(
-                    text = "TECSUP Store",
-                    style = MaterialTheme.typography.titleLarge,
+                    text = "Bienvenido a TECSUP Store",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Mas vendidos",
+                    text = "Encuentra la mejor tecnología con descuento para estudiantes.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -89,17 +90,49 @@ fun PantallaInicio(
                 .padding(bottom = 16.dp),
             shape = RoundedCornerShape(12.dp)
         )
+        Text(
+            text = "Productos Destacados",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
         ){
             items(productosFiltrados){ producto ->
-                TarjetaProducto(
-                    producto = producto,
-                    onFavoritoClick = { onFavoritoClick(producto) },
-                    onCompartirClick = {},
-                    onReportarClick = {}
-                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ){
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        Column(modifier = Modifier.weight(1f)){
+                            Text(
+                                text = producto.nombre,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "S/ %.2f".format(producto.precio),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Button(
+                            onClick = { onAgregarAlCarrito(producto) }
+                        ){
+                            Text("Agregar")
+                        }
+                    }
+                }
             }
         }
     }

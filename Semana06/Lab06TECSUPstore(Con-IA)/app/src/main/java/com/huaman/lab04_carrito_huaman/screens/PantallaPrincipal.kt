@@ -1,33 +1,24 @@
 package com.huaman.lab04_carrito_huaman.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -53,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,11 +55,9 @@ enum class DestinoNavegacion(
     val iconoSeleccionado: ImageVector,
     val iconoNoSeleccionado: ImageVector
 ){
-    INICIO("Inicio", Icons.Filled.Home, Icons.Outlined.Home),
-    PEDIDOS("Mis pedidos", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
-    FAVORITOS("Favoritos", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
-    PERFIL("Perfil", Icons.Filled.Person, Icons.Outlined.Person),
-    CERRAR_SESION("Cerrar sesión", Icons.Filled.Close, Icons.Outlined.Close)
+    INICIO("Inicio / Catálogo", Icons.Filled.Home, Icons.Outlined.Home),
+    CARRITO("Carrito de Compras", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
+    PERFIL("Mi Perfil", Icons.Filled.Person, Icons.Outlined.Person)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,9 +65,8 @@ enum class DestinoNavegacion(
 fun PantallaPrincipal(){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var destinoActual by remember { mutableStateOf(DestinoNavegacion.INICIO) }
+    var destinoActual by remember { mutableStateOf(DestinoNavegacion.CARRITO) }
     val productosCarrito = remember { mutableStateListOf<Producto>() }
-    val productosFavoritos = remember { mutableStateListOf<Producto>() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -91,37 +78,33 @@ fun PantallaPrincipal(){
                         .background(MaterialTheme.colorScheme.primaryContainer)
                         .padding(20.dp)
                 ){
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
+                    Column{
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(64.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ){
-                            Text(
-                                text = "MR",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Avatar",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(40.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.padding(8.dp))
-                        Column{
-                            Text(
-                                text = "Maria Rojas",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "maria@tecsup.edu.pe",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Estudiante TECSUP",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "estudiante@tecsup.edu.pe",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
                     }
                 }
                 HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
@@ -148,9 +131,9 @@ fun PantallaPrincipal(){
                             )
                         },
                         badge = {
-                            if(destino == DestinoNavegacion.FAVORITOS && productosFavoritos.isNotEmpty()){
+                            if(destino == DestinoNavegacion.CARRITO && productosCarrito.isNotEmpty()){
                                 Badge{
-                                    Text("${productosFavoritos.size}")
+                                    Text("${productosCarrito.size}")
                                 }
                             }
                         },
@@ -179,7 +162,7 @@ fun PantallaPrincipal(){
                         ){
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = "Abrir menú de navegación"
+                                contentDescription = "Abrir menú de navegación."
                             )
                         }
                     },
@@ -198,98 +181,24 @@ fun PantallaPrincipal(){
                 when(destinoActual){
                     DestinoNavegacion.INICIO -> {
                         PantallaInicio(
-                            onAgregarAlCarrito = { producto ->
-                                productosCarrito.add(producto)
-                            },
-                            onFavoritoClick = { producto ->
-                                if(productosFavoritos.none{ it.nombre == producto.nombre }){
-                                    productosFavoritos.add(producto)
+                            onAgregarAlCarrito = { nuevoProducto ->
+                                val index = productosCarrito.indexOfFirst{ it.nombre == nuevoProducto.nombre }
+                                if(index != -1){
+                                    val existente = productosCarrito[index]
+                                    productosCarrito[index] = existente.copy(cantidad = existente.cantidad + 1)
+                                }else{
+                                    productosCarrito.add(nuevoProducto)
                                 }
                             }
                         )
                     }
-                    DestinoNavegacion.PEDIDOS -> {
+                    DestinoNavegacion.CARRITO -> {
                         PantallaCarrito(
                             productos = productosCarrito
                         )
                     }
-                    DestinoNavegacion.FAVORITOS -> {
-                        PantallaFavoritos(
-                            favoritos = productosFavoritos
-                        )
-                    }
                     DestinoNavegacion.PERFIL -> {
                         PantallaPerfil()
-                    }
-                    DestinoNavegacion.CERRAR_SESION -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ){
-                            Text("Sesión cerrada", style = MaterialTheme.typography.headlineMedium)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun PantallaFavoritos(
-    favoritos: List<Producto>
-){
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ){
-        Text(
-            text = "Productos Favoritos",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        if(favoritos.isEmpty()){
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ){
-                Text("No tienes productos favoritos", color = Color.Gray)
-            }
-        }else{
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ){
-                items(favoritos){ producto ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ){
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Column(modifier = Modifier.weight(1f)){
-                                Text(
-                                    text = producto.nombre,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "S/ %.2f".format(producto.precio),
-                                    color = Color.Gray
-                                )
-                            }
-                            Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = "Favorito",
-                                tint = Color.Red
-                            )
-                        }
                     }
                 }
             }
