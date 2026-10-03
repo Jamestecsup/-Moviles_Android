@@ -19,10 +19,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +55,7 @@ fun RegistroScreen(
     var telefono by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
     var referencia by remember { mutableStateOf("") }
+    var mostrarExito by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -119,11 +122,29 @@ fun RegistroScreen(
 
         BotonPrimario(
             texto = "Crear cuenta",
-            onClick = { onCrearCuenta(nombre, telefono, direccion, referencia) },
+            onClick = { mostrarExito = true },
             habilitado = nombre.isNotBlank() && telefono.isNotBlank() && direccion.isNotBlank()
         )
 
         Spacer(Modifier.height(24.dp))
+    }
+
+    if (mostrarExito) {
+        AlertDialog(
+            onDismissRequest = { mostrarExito = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarExito = false
+                        onCrearCuenta(nombre, telefono, direccion, referencia)
+                    }
+                ) {
+                    Text("Aceptar")
+                }
+            },
+            title = { Text("¡Cuenta creada con éxito!") },
+            text = { Text("Bienvenido/a $nombre, ya puedes hacer tu primer pedido.") }
+        )
     }
 }
 
