@@ -32,6 +32,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.model.Rol
+import com.huaman.cafecampus.ui.admin.DetallePedidoAdminScreen
+import com.huaman.cafecampus.ui.admin.FormularioProductoScreen
+import com.huaman.cafecampus.ui.admin.MenuAdminScreen
 import com.huaman.cafecampus.ui.admin.PanelScreen
 import com.huaman.cafecampus.ui.admin.PedidosAdminScreen
 import com.huaman.cafecampus.ui.cliente.ConfirmarPedidoScreen
@@ -313,8 +316,66 @@ fun NavCafe(
                 )
             }
 
-            // TODO (Paso 11): agregar DETALLE_PEDIDO_ADMIN, MENU_ADMIN,
-            //                  FORMULARIO_PRODUCTO y AJUSTES
+            composable(
+                route = Rutas.DETALLE_PEDIDO_ADMIN,
+                arguments = listOf(navArgument(Rutas.ARG_PEDIDO_ID) { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt(Rutas.ARG_PEDIDO_ID) ?: 0
+                LaunchedEffect(id) { factory.pedidosAdmin.verPedido(id) }
+
+                val pedido by factory.pedidosAdmin.pedidoAbierto.collectAsStateWithLifecycle()
+                DetallePedidoAdminScreen(
+                    pedido = pedido,
+                    onCambiarEstado = { nuevo ->
+                        pedido?.let { p ->
+                            factory.pedidosAdmin.cambiarA(p, nuevo)
+                        }
+                    },
+                    onCancelar = { pedido?.let { factory.pedidosAdmin.cancelar(it) } },
+                    onAtras = { navController.popBackStack() }
+                )
+            }
+
+            composable(Rutas.MENU_ADMIN) {
+                MenuAdminScreen(
+                    vm = factory.menuAdmin,
+                    onNuevo = { navController.navigate(Rutas.formularioProducto()) },
+                    onEditar = { id -> navController.navigate(Rutas.formularioProducto(id)) }
+                )
+            }
+
+            composable(
+                route = Rutas.FORMULARIO_PRODUCTO,
+                arguments = listOf(
+                    navArgument(Rutas.ARG_PRODUCTO_ID) {
+                        type = NavType.IntType
+                        defaultValue = 0
+                    }
+                )
+            ) { entry ->
+                val id = entry.arguments?.getInt(Rutas.ARG_PRODUCTO_ID) ?: 0
+                val vm = factory.menuAdmin
+
+                val productos by vm.productos.collectAsStateWithLifecycle()
+                val error by vm.error.collectAsStateWithLifecycle()
+
+                FormularioProductoScreen(
+                    producto = productos.firstOrNull { it.id == id },
+                    categorias = vm.categoriasFormulario,
+                    iconos = vm.iconos,
+                    error = error,
+                    onGuardar = { idForm, nombre, desc, cat, prec, ico, disp ->
+                        vm.guardar(idForm, nombre, desc, cat, prec, ico, disp) {
+                            navController.popBackStack()
+                        }
+                    },
+                    onCancelar = { navController.popBackStack() },
+                    onAtras = { navController.popBackStack() },
+                    onLimpiarError = vm::limpiarError
+                )
+            }
+
+            // TODO (Paso 12): agregar AJUSTES
         }
     }
 }

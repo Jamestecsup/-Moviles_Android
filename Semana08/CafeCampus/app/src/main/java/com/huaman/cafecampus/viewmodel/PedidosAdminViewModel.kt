@@ -74,6 +74,13 @@ class PedidosAdminViewModel(
         }
     }
 
+    /** Cambia el pedido a un estado concreto (selector del detalle). */
+    fun cambiarA(pedido: PedidoConDetalle, estado: EstadoPedido) {
+        viewModelScope.launch {
+            repo.cambiarEstado(pedido.pedido.id, estado)
+        }
+    }
+
     /** Texto del boton principal segun el estado (logica, no UI). */
     fun textoAvanzar(estado: EstadoPedido): String = when (estado) {
         EstadoPedido.RECIBIDO -> "Pasar a Preparando"
