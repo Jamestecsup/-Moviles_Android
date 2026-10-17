@@ -11,12 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.model.Rol
+import com.huaman.cafecampus.ui.cliente.DetalleProductoScreen
 import com.huaman.cafecampus.ui.cliente.LoginScreen
 import com.huaman.cafecampus.ui.cliente.MenuScreen
 import com.huaman.cafecampus.ui.cliente.SplashScreen
@@ -106,8 +109,11 @@ fun NavCafe(
 
             composable(Rutas.MENU) {
                 val vm: MenuViewModel = viewModel(factory = factory)
+                val unidades by vm.unidadesCarrito.collectAsStateWithLifecycle()
+
                 MenuScreen(
                     vm = vm,
+                    unidadesCarrito = unidades,
                     onProducto = { id ->
                         vm.abrirProducto(id)
                         navController.navigate(Rutas.detalleProducto(id))
@@ -115,11 +121,48 @@ fun NavCafe(
                 )
             }
 
-            // TODO (Paso 7): agregar DETALLE_PRODUCTO
+            composable(
+                route = Rutas.DETALLE_PRODUCTO,
+                arguments = listOf(navArgument(Rutas.ARG_PRODUCTO_ID) { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt(Rutas.ARG_PRODUCTO_ID) ?: 0
+                val vm: MenuViewModel = viewModel(factory = factory)
+
+                // El producto se busca SIEMPRE en el Flow de productos: si el
+                // administrador lo marca como agotado mientras esta abierta,
+                // la pantalla se actualiza sola.
+                val productos by vm.productos.collectAsStateWithLifecycle()
+                val producto = productos.firstOrNull { it.id == id }
+
+                if (producto == null) {
+                    // El producto ya no existe (lo borraron): se vuelve al menu.
+                    VolverAlMenu(navController)
+                } else {
+                    DetalleProductoScreen(
+                        producto = producto,
+                        cantidadEnCarrito = vm.carrito.collectAsStateWithLifecycle().value
+                            .firstOrNull { it.producto.id == id }?.cantidad ?: 0,
+                        onAgregar = { cantidad, nota ->
+                            vm.agregar(producto, cantidad, nota)
+                            navController.popBackStack()
+                        },
+                        onAtras = { navController.popBackStack() }
+                    )
+                }
+            }
+
             // TODO (Paso 8): agregar CONFIRMAR_PEDIDO, SEGUIMIENTO, MIS_PEDIDOS, PERFIL
             // TODO (Paso 9): agregar PANEL, PEDIDOS_ADMIN, DETALLE_PEDIDO_ADMIN
             // TODO (Paso 10): agregar MENU_ADMIN, FORMULARIO_PRODUCTO, AJUSTES
         }
+    }
+}
+
+/** Vuelve al menu cuando el producto ya no existe. */
+@Composable
+private fun VolverAlMenu(navController: NavHostController) {
+    LaunchedEffect(Unit) {
+        navController.popBackStack(Rutas.MENU, inclusive = false)
     }
 }
 

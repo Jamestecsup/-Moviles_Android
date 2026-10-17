@@ -1,5 +1,6 @@
 package com.huaman.cafecampus.ui.cliente
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,9 +15,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 // OJO: `items` de LazyRow y de LazyVerticalGrid se llaman igual. Importamos la
 // de LazyRow y, en la grilla, usamos la sobrecarga por `count`.
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -29,11 +32,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.huaman.cafecampus.data.local.Categoria
 import com.huaman.cafecampus.ui.components.IconoContador
 import com.huaman.cafecampus.ui.components.ProductoCard
+import com.huaman.cafecampus.ui.components.plural
 import com.huaman.cafecampus.ui.components.soles
 import com.huaman.cafecampus.viewmodel.MenuViewModel
 
@@ -47,7 +52,9 @@ import com.huaman.cafecampus.viewmodel.MenuViewModel
 fun MenuScreen(
     vm: MenuViewModel,
     onProducto: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    unidadesCarrito: Int = 0,
+    onCarrito: () -> Unit = {}
 ) {
     val productos by vm.productos.collectAsStateWithLifecycle()
     val visibles by vm.productosVisibles.collectAsStateWithLifecycle()
@@ -89,6 +96,43 @@ fun MenuScreen(
                 icon = Icons.Filled.Notifications,
                 descripcion = "Notificaciones"
             )
+        }
+
+        // Bolsa del pedido, con contador de unidades
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { onCarrito() }
+                .padding(vertical = 10.dp, horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Tu pedido",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = if (unidadesCarrito == 0) {
+                        "Vacio"
+                    } else {
+                        plural(unidadesCarrito, "producto", "productos")
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Icon(
+                    imageVector = Icons.Filled.ShoppingBag,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(18.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         // Buscador
