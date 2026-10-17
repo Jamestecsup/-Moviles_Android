@@ -97,4 +97,15 @@ interface PedidoDao {
     /** Version puntual del conteo (para "nuevos pedidos" al abrir). */
     @Query("SELECT COUNT(*) FROM pedidos WHERE estado = :estado")
     suspend fun cantidadPorEstadoUnaVez(estado: EstadoPedido): Int
+
+    /** Cuantos pedidos (no cancelados) se hicieron desde el inicio del dia. */
+    @Query("SELECT COUNT(*) FROM pedidos WHERE fecha >= :inicio AND estado <> 'CANCELADO'")
+    fun pedidosDesde(inicio: Long): Flow<Int>
+
+    /**
+     * Horarios de recojo de los pedidos de hoy, para el grafico de barras
+     * "Pedidos por hora" del panel. Se agrupan en el ViewModel.
+     */
+    @Query("SELECT horaRecojo FROM pedidos WHERE fecha >= :inicio AND estado <> 'CANCELADO'")
+    fun horasRecojoDesde(inicio: Long): Flow<List<String>>
 }

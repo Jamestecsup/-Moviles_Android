@@ -32,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.model.Rol
+import com.huaman.cafecampus.ui.admin.PanelScreen
+import com.huaman.cafecampus.ui.admin.PedidosAdminScreen
 import com.huaman.cafecampus.ui.cliente.ConfirmarPedidoScreen
 import com.huaman.cafecampus.ui.cliente.DetalleProductoScreen
 import com.huaman.cafecampus.ui.cliente.LoginScreen
@@ -292,8 +294,27 @@ fun NavCafe(
                 )
             }
 
-            // TODO (Paso 9): agregar PANEL, PEDIDOS_ADMIN, DETALLE_PEDIDO_ADMIN
-            // TODO (Paso 10): agregar MENU_ADMIN, FORMULARIO_PRODUCTO, AJUSTES
+            // -------------------------------------------------------------------
+            // ADMINISTRADOR
+            // -------------------------------------------------------------------
+
+            composable(Rutas.PANEL) {
+                PanelScreen(
+                    vm = factory.panelAdmin,
+                    onVerTodos = { navController.navigate(Rutas.PEDIDOS_ADMIN) },
+                    onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) }
+                )
+            }
+
+            composable(Rutas.PEDIDOS_ADMIN) {
+                PedidosAdminScreen(
+                    vm = factory.pedidosAdmin,
+                    onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) }
+                )
+            }
+
+            // TODO (Paso 11): agregar DETALLE_PEDIDO_ADMIN, MENU_ADMIN,
+            //                  FORMULARIO_PRODUCTO y AJUSTES
         }
     }
 }
@@ -311,8 +332,7 @@ fun pantallaPrincipal(usuario: Usuario): String = pantallaPrincipalDeRol(usuario
 
 fun pantallaPrincipalDeRol(rol: Rol): String = when (rol) {
     Rol.CLIENTE -> Rutas.MENU
-    // TODO (Paso 9): cuando exista el panel, el admin entra a PANEL.
-    Rol.ADMIN -> Rutas.MENU
+    Rol.ADMIN -> Rutas.PANEL
 }
 
 /**

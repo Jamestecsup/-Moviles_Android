@@ -127,4 +127,10 @@ class CafeRepositoryRoom(
 
     override fun observarCantidadPorEstado(estado: EstadoPedido): Flow<Int> =
         pedidoDao.cantidadPorEstado(estado)
+
+    override fun observarPedidosHoy(inicioDia: Long): Flow<Int> =
+        pedidoDao.pedidosDesde(inicioDia)
+
+    override fun observarHorasRecojoHoy(inicioDia: Long): Flow<List<String>> =
+        pedidoDao.horasRecojoDesde(inicioDia)
 }

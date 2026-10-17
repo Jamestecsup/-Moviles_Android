@@ -91,4 +91,10 @@ interface CafeRepository {
 
     /** Cuantos pedidos hay en un estado (contadores del panel). */
     fun observarCantidadPorEstado(estado: EstadoPedido): Flow<Int>
+
+    /** Cuantos pedidos no cancelados se hicieron desde [inicioDia]. */
+    fun observarPedidosHoy(inicioDia: Long): Flow<Int>
+
+    /** Horarios de recojo de hoy, para el grafico de barras del panel. */
+    fun observarHorasRecojoHoy(inicioDia: Long): Flow<List<String>>
 }
