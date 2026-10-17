@@ -4,8 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.huaman.cafecampus.data.local.dao.PedidoDao
 import com.huaman.cafecampus.data.local.dao.ProductoDao
+import com.huaman.cafecampus.data.local.dao.UsuarioDao
+import com.huaman.cafecampus.data.local.entity.DetallePedido
+import com.huaman.cafecampus.data.local.entity.Pedido
 import com.huaman.cafecampus.data.local.entity.Producto
+import com.huaman.cafecampus.data.local.entity.Usuario
 
 /**
  * Base de datos local de CafeCampus (SQLite: `cafecampus.db`).
@@ -18,7 +23,12 @@ import com.huaman.cafecampus.data.local.entity.Producto
  * porque el esquema guardado no coincide con el nuevo.
  */
 @Database(
-    entities = [Producto::class /* TODO (Paso 1): agregar Usuario, Pedido y DetallePedido */],
+    entities = [
+        Producto::class,
+        Usuario::class,
+        Pedido::class,
+        DetallePedido::class
+    ],
     version = 1,
     exportSchema = false
 )
@@ -26,7 +36,9 @@ abstract class CafeDatabase : RoomDatabase() {
 
     abstract fun productoDao(): ProductoDao
 
-    // TODO (Paso 2): usuarioDao() y pedidoDao()
+    abstract fun usuarioDao(): UsuarioDao
+
+    abstract fun pedidoDao(): PedidoDao
 
     companion object {
         private const val NOMBRE = "cafecampus.db"

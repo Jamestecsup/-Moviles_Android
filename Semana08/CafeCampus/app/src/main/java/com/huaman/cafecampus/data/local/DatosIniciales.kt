@@ -1,6 +1,8 @@
 package com.huaman.cafecampus.data.local
 
 import com.huaman.cafecampus.data.local.entity.Producto
+import com.huaman.cafecampus.data.local.entity.Usuario
+import com.huaman.cafecampus.model.Rol
 
 /**
  * Datos de prueba que se siembran SOLO la primera vez que se abre la app.
@@ -15,16 +17,41 @@ import com.huaman.cafecampus.data.local.entity.Producto
  */
 object DatosIniciales {
 
+    /**
+     * Siembra los datos de prueba SOLO la primera vez que se abre la app.
+     * Si ya hay usuarios, no inserta nada.
+     */
     suspend fun sembrar(db: CafeDatabase) {
-        val dao = db.productoDao()
-        if (dao.contar() > 0) return // ya sembrado
+        if (db.usuarioDao().contar() > 0) return // ya sembrado
 
-        PRODUCTOS.forEach { dao.insertar(it) }
+        // 1) Los 6 productos de la carta
+        val productos = db.productoDao()
+        if (productos.contar() == 0) PRODUCTOS.forEach { productos.insertar(it) }
 
-        // TODO (Paso 3): sembrar tambien los 2 usuarios
-        //   juan@campus.test / 1234  (CLIENTE)
-        //   admin@cafe.test  / admin  (ADMIN)
+        // 2) Los 2 usuarios de la seccion 5 del laboratorio
+        USUARIOS.forEach { db.usuarioDao().insertar(it) }
     }
+
+    /**
+     * Cuentas de prueba. Datos ficticios (Ley 29733).
+     *
+     *   estudiante    juan@campus.test / 1234
+     *   administrador admin@cafe.test  / admin
+     */
+    private val USUARIOS = listOf(
+        Usuario(
+            nombre = "Juan Perez",
+            correo = "juan@campus.test",
+            clave = "1234",
+            rol = Rol.CLIENTE.name
+        ),
+        Usuario(
+            nombre = "Ana Torres",
+            correo = "admin@cafe.test",
+            clave = "admin",
+            rol = Rol.ADMIN.name
+        )
+    )
 
     /** Carta inicial de la cafeteria. */
     private val PRODUCTOS = listOf(
