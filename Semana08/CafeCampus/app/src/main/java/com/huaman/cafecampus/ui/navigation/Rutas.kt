@@ -20,7 +20,6 @@ object Rutas {
     // -----------------------------------------------------------------------
     const val MENU = "menu"
     const val DETALLE_PRODUCTO = "detalleProducto/{productoId}"
-    const val CARRITO = "carrito"
     const val CONFIRMAR_PEDIDO = "confirmarPedido"
     const val SEGUIMIENTO = "seguimiento/{pedidoId}"
     const val MIS_PEDIDOS = "misPedidos"

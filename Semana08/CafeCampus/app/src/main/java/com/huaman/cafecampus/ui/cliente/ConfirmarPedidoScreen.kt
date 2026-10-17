@@ -15,8 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +53,8 @@ fun ConfirmarPedidoScreen(
     items: List<ItemCarrito>,
     onConfirmar: (horaRecojo: String, pago: String, nota: String) -> Unit,
     modifier: Modifier = Modifier,
+    recibePedidos: Boolean = true,
+    mensaje: String? = null,
     onSeguirPidiendo: () -> Unit = {},
     onAtras: () -> Unit = {}
 ) {
@@ -71,6 +76,47 @@ fun ConfirmarPedidoScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
+
+            // Aviso: el administrador puede cerrar la cafeteria desde Ajustes.
+            if (!recibePedidos) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                        Text(
+                            text = "Cafeteria cerrada",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            text = "Ahora no se pueden confirmar pedidos. Intenta mas tarde.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+
+            if (mensaje != null) {
+                Text(
+                    text = mensaje,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            }
 
             // Lineas del pedido
             Card(
@@ -175,7 +221,7 @@ fun ConfirmarPedidoScreen(
                 texto = "Confirmar pedido",
                 onClick = { onConfirmar(horaRecojo, pago.valor, nota) },
                 modifier = Modifier.padding(top = 20.dp),
-                habilitado = items.isNotEmpty()
+                habilitado = items.isNotEmpty() && recibePedidos
             )
 
             CafeButtonSecundario(

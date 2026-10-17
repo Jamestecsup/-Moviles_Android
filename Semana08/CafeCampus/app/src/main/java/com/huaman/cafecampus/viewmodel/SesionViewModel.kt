@@ -38,6 +38,9 @@ class SesionViewModel(
     private val _recibirPedidos = MutableStateFlow(true)
     val recibirPedidos: StateFlow<Boolean> = _recibirPedidos.asStateFlow()
 
+    private val _notificaciones = MutableStateFlow(true)
+    val notificaciones: StateFlow<Boolean> = _notificaciones.asStateFlow()
+
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
 
@@ -49,6 +52,9 @@ class SesionViewModel(
         }
         viewModelScope.launch {
             prefs.recibirPedidos.collect { _recibirPedidos.value = it }
+        }
+        viewModelScope.launch {
+            prefs.notificaciones.collect { _notificaciones.value = it }
         }
     }
 
@@ -147,6 +153,10 @@ class SesionViewModel(
 
     fun guardarRecibirPedidos(acepta: Boolean) {
         viewModelScope.launch { prefs.guardarRecibirPedidos(acepta) }
+    }
+
+    fun guardarNotificaciones(activa: Boolean) {
+        viewModelScope.launch { prefs.guardarNotificaciones(activa) }
     }
 
     /** Limpia el error cuando el usuario vuelve a escribir. */

@@ -11,4 +11,11 @@ enum class Rol {
     ADMIN;
 
     val esAdmin: Boolean get() = this == ADMIN
+
+    /** Texto que ve el usuario. */
+    val etiqueta: String
+        get() = when (this) {
+            CLIENTE -> "Estudiante"
+            ADMIN -> "Administrador"
+        }
 }

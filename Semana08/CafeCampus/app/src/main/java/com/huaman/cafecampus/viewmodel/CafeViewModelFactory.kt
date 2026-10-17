@@ -28,7 +28,7 @@ class CafeViewModelFactory(
 
     val sesion: SesionViewModel by lazy { SesionViewModel(repo, prefs) }
 
-    val pedidosCliente: PedidosClienteViewModel by lazy { PedidosClienteViewModel(repo, menu) }
+    val pedidosCliente: PedidosClienteViewModel by lazy { PedidosClienteViewModel(repo, menu, prefs) }
 
     val panelAdmin: PanelAdminViewModel by lazy { PanelAdminViewModel(repo) }
 

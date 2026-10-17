@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.model.Rol
+import com.huaman.cafecampus.ui.admin.AjustesScreen
 import com.huaman.cafecampus.ui.admin.DetallePedidoAdminScreen
 import com.huaman.cafecampus.ui.admin.FormularioProductoScreen
 import com.huaman.cafecampus.ui.admin.MenuAdminScreen
@@ -244,8 +245,13 @@ fun NavCafe(
 
             composable(Rutas.CONFIRMAR_PEDIDO) {
                 val carrito by menu.carrito.collectAsStateWithLifecycle()
+                val recibePedidos by pedidosCliente.recibirPedidos.collectAsStateWithLifecycle()
+                val mensaje by pedidosCliente.mensaje.collectAsStateWithLifecycle()
+
                 ConfirmarPedidoScreen(
                     items = carrito,
+                    recibePedidos = recibePedidos,
+                    mensaje = mensaje,
                     onConfirmar = { hora, pago, nota ->
                         pedidosCliente.confirmar(hora, pago, nota) { idNuevo ->
                             navController.navigate(Rutas.seguimiento(idNuevo)) {
@@ -375,7 +381,34 @@ fun NavCafe(
                 )
             }
 
-            // TODO (Paso 12): agregar AJUSTES
+            composable(Rutas.AJUSTES) {
+                val modoOscuro by sesion.modoOscuro.collectAsStateWithLifecycle()
+                val notificaciones by sesion.notificaciones.collectAsStateWithLifecycle()
+                val recibePedidos by sesion.recibirPedidos.collectAsStateWithLifecycle()
+
+                AjustesScreen(
+                    usuario = usuario,
+                    modoOscuro = modoOscuro,
+                    notificaciones = notificaciones,
+                    recibePedidos = recibePedidos,
+                    onModoOscuro = sesion::guardarModoOscuro,
+                    onNotificaciones = sesion::guardarNotificaciones,
+                    onRecibePedidos = sesion::guardarRecibirPedidos,
+                    onCambiarPerfil = {
+                        // Modo practica: se guarda el otro perfil en DataStore
+                        // y se navega a su grafo LIMPIANDO la pila.
+                        val otro = if (rol == Rol.ADMIN) Rol.CLIENTE else Rol.ADMIN
+                        sesion.cambiarPerfil(otro)
+                        irAPantallaPrincipal(navController, otro)
+                    },
+                    onCerrarSesion = {
+                        sesion.cerrarSesion()
+                        navController.navigate(Rutas.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }

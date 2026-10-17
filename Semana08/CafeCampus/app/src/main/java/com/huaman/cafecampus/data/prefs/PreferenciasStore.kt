@@ -33,6 +33,7 @@ class PreferenciasStore(private val context: Context) {
         val PERFIL_ACTIVO = stringPreferencesKey("perfil_activo")
         val MODO_OSCURO = booleanPreferencesKey("modo_oscuro")
         val RECIBIR_PEDIDOS = booleanPreferencesKey("recibir_pedidos")
+        val NOTIFICACIONES = booleanPreferencesKey("notificaciones")
     }
 
     /**
@@ -56,6 +57,9 @@ class PreferenciasStore(private val context: Context) {
     /** Por defecto la cafeteria SI recibe pedidos. */
     val recibirPedidos: Flow<Boolean> = prefs.map { it[Claves.RECIBIR_PEDIDOS] ?: true }
 
+    /** Avisos de pedidos nuevos (interruptor de la pantalla de Ajustes). */
+    val notificaciones: Flow<Boolean> = prefs.map { it[Claves.NOTIFICACIONES] ?: true }
+
     // -----------------------------------------------------------------------
     // Escritura -> funciones suspend
     // -----------------------------------------------------------------------
@@ -75,6 +79,10 @@ class PreferenciasStore(private val context: Context) {
 
     suspend fun guardarRecibirPedidos(acepta: Boolean) {
         context.dataStore.edit { it[Claves.RECIBIR_PEDIDOS] = acepta }
+    }
+
+    suspend fun guardarNotificaciones(activa: Boolean) {
+        context.dataStore.edit { it[Claves.NOTIFICACIONES] = activa }
     }
 
     /** Cerrar sesion: borra el perfil. El resto de ajustes se conserva. */

@@ -3,6 +3,7 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
+import com.huaman.cafecampus.data.prefs.PreferenciasStore
 import com.huaman.cafecampus.data.repository.CafeRepository
 import com.huaman.cafecampus.model.ItemCarrito
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,8 +27,22 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class PedidosClienteViewModel(
     private val repo: CafeRepository,
-    private val menu: MenuViewModel
+    private val menu: MenuViewModel,
+    private val prefs: PreferenciasStore
 ) : ViewModel() {
+
+    /**
+     * Si la cafeteria acepta pedidos. Lo decide el administrador en Ajustes y
+     * se guarda en DataStore, asi que el cliente lo ve al instante.
+     */
+    private val _recibirPedidos = MutableStateFlow(true)
+    val recibirPedidos: StateFlow<Boolean> = _recibirPedidos.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            prefs.recibirPedidos.collect { _recibirPedidos.value = it }
+        }
+    }
 
     /** Id del cliente conectado. Lo fija la pantalla al entrar. */
     private val _clienteId = MutableStateFlow(0)
@@ -96,6 +111,12 @@ class PedidosClienteViewModel(
         val cliente = _clienteId.value
         if (cliente == 0) {
             _mensaje.value = "Sesion no iniciada"
+            return
+        }
+
+        // El administrador puede cerrar la cafeteria desde Ajustes.
+        if (!_recibirPedidos.value) {
+            _mensaje.value = "La cafeteria esta cerrada"
             return
         }
 
