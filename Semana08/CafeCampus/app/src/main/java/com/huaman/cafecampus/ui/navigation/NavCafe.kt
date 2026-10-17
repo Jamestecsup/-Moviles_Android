@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,31 +15,38 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.huaman.cafecampus.data.local.entity.Usuario
+import com.huaman.cafecampus.model.Rol
+import com.huaman.cafecampus.ui.cliente.LoginScreen
 import com.huaman.cafecampus.ui.cliente.MenuScreen
 import com.huaman.cafecampus.ui.cliente.SplashScreen
 import com.huaman.cafecampus.viewmodel.CafeViewModelFactory
 import com.huaman.cafecampus.viewmodel.MenuViewModel
+import com.huaman.cafecampus.viewmodel.SesionViewModel
+import kotlinx.coroutines.launch
 
 /**
  * Grafo de navegacion de CafeCampus.
  *
- * Los dos perfiles comparten el MISMO NavHost. Lo que cambia segun el rol es:
- *  - el tema `CafeTheme(rol)` (naranja / indigo),
- *  - el `NavigationBar` inferior (3 items cliente / 4 items admin),
- *  - la pantalla de inicio.
+ * Los dos perfiles comparten el MISMO NavHost. Lo que cambia segun el rol es
+ * el tema (`CafeTheme(rol)`, en MainActivity), el `NavigationBar` inferior
+ * (3 items cliente / 4 items admin) y la pantalla de inicio.
  *
- * Paso 6: Splash + Menu.
+ * Implementado: Splash y Login (Paso 6), Menu (proyecto base).
  */
 @Composable
 fun NavCafe(
     factory: CafeViewModelFactory,
+    sesion: SesionViewModel,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
     val backStack by navController.currentBackStackEntryAsState()
     val rutaActual = backStack?.destination?.route ?: Rutas.SPLASH
+    val usuario by sesion.usuarioActual.collectAsStateWithLifecycle()
+    val rol = usuario?.rolTipado ?: Rol.CLIENTE
 
-    // Pantallas SIN barra inferior (son "modales" o de entrada)
+    // Pantallas SIN barra inferior (son de entrada o de detalle)
     val sinBarra = rutaActual in listOf(
         Rutas.SPLASH,
         Rutas.LOGIN,
@@ -53,7 +62,8 @@ fun NavCafe(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (!sinBarra) {
-                // TODO (Paso 9/12): barra inferior segun el rol activo
+                // TODO (Paso 9/12): NavigationBar con 3 items (cliente)
+                // o 4 items (administrador).
             }
         }
     ) { innerPadding ->
@@ -64,16 +74,35 @@ fun NavCafe(
         ) {
 
             composable(Rutas.SPLASH) {
+                val scope = rememberCoroutineScope()
                 SplashScreen(
                     onListo = {
-                        navController.navigate(Rutas.MENU) {
-                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                        scope.launch {
+                            // Si DataStore ya tiene perfil, se salta el login.
+                            val guardada = sesion.restaurarSesion()
+                            val destino = if (guardada == null) {
+                                Rutas.LOGIN
+                            } else {
+                                pantallaPrincipal(guardada)
+                            }
+                            navController.navigate(destino) {
+                                popUpTo(Rutas.SPLASH) { inclusive = true }
+                            }
                         }
                     }
                 )
             }
 
-            // TODO (Paso 6): agregar el destino LOGIN
+            composable(Rutas.LOGIN) {
+                LoginScreen(
+                    vm = sesion,
+                    onIngresoExitoso = { rolIngresado ->
+                        navController.navigate(pantallaPrincipalDeRol(rolIngresado)) {
+                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                        }
+                    }
+                )
+            }
 
             composable(Rutas.MENU) {
                 val vm: MenuViewModel = viewModel(factory = factory)
@@ -91,5 +120,25 @@ fun NavCafe(
             // TODO (Paso 9): agregar PANEL, PEDIDOS_ADMIN, DETALLE_PEDIDO_ADMIN
             // TODO (Paso 10): agregar MENU_ADMIN, FORMULARIO_PRODUCTO, AJUSTES
         }
+    }
+}
+
+/** Pantalla principal segun el perfil del usuario. */
+fun pantallaPrincipal(usuario: Usuario): String = pantallaPrincipalDeRol(usuario.rolTipado)
+
+fun pantallaPrincipalDeRol(rol: Rol): String = when (rol) {
+    Rol.CLIENTE -> Rutas.MENU
+    // TODO (Paso 9): cuando exista el panel, el admin entra a PANEL.
+    Rol.ADMIN -> Rutas.MENU
+}
+
+/**
+ * Navega a la pantalla principal de un rol LIMPIANDO la pila.
+ * Se usa al cambiar de perfil y al cerrar sesion.
+ */
+fun irAPantallaPrincipal(navController: NavHostController, rol: Rol) {
+    navController.navigate(pantallaPrincipalDeRol(rol)) {
+        popUpTo(0) { inclusive = true }   // limpia toda la pila
+        launchSingleTop = true
     }
 }

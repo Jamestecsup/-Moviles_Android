@@ -22,6 +22,13 @@ interface UsuarioDao {
     @Query("SELECT * FROM usuarios WHERE id = :id LIMIT 1")
     suspend fun porId(id: Int): Usuario?
 
+    /**
+     * Primer usuario de un rol. Lo usa el Splash para recuperar la sesion
+     * guardada en DataStore (que solo recuerda el ROL, no el id).
+     */
+    @Query("SELECT * FROM usuarios WHERE rol = :rol ORDER BY id LIMIT 1")
+    suspend fun porRol(rol: String): Usuario?
+
     @Query("SELECT * FROM usuarios ORDER BY nombre")
     fun observarTodos(): Flow<List<Usuario>>
 

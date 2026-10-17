@@ -5,6 +5,7 @@ import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
 import com.huaman.cafecampus.model.EstadoPedido
 import com.huaman.cafecampus.model.ItemCarrito
+import com.huaman.cafecampus.model.Rol
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -29,6 +30,12 @@ interface CafeRepository {
 
     /** Login. Devuelve el Usuario o null si el correo/clave no coinciden. */
     suspend fun login(correo: String, clave: String): Usuario?
+
+    /**
+     * Recupera el usuario de un rol. Lo usa el Splash para reconstruir la
+     * sesion: DataStore solo recuerda el ROL, no el id del usuario.
+     */
+    suspend fun usuarioDelRol(rol: Rol): Usuario?
 
     // -----------------------------------------------------------------------
     // Productos

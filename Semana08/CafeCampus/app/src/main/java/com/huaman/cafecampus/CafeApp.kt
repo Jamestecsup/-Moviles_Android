@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.huaman.cafecampus.data.local.CafeDatabase
 import com.huaman.cafecampus.data.local.DatosIniciales
+import com.huaman.cafecampus.data.prefs.PreferenciasStore
 import com.huaman.cafecampus.data.repository.CafeRepository
 import com.huaman.cafecampus.data.repository.CafeRepositoryRoom
 import kotlinx.coroutines.CoroutineScope
@@ -14,9 +15,10 @@ import kotlinx.coroutines.launch
 /**
  * Application de CafeCampus. Registrada en el AndroidManifest.
  *
- * Hace dos cosas al arrancar:
- *  1. crea la base Room (singleton) y la registra en DataStore,
- *  2. siembra los datos iniciales la primera vez.
+ * Hace tres cosas al arrancar:
+ *  1. crea la base Room (singleton),
+ *  2. siembra los datos iniciales la primera vez,
+ *  3. expone el Repository y las Preferencias para toda la app.
  */
 class CafeApp : Application() {
 
@@ -28,6 +30,9 @@ class CafeApp : Application() {
         CafeRepositoryRoom(CafeDatabase.obtener(this))
     }
 
+    /** Preferencias (DataStore): perfil activo, modo oscuro, etc. */
+    val preferencias: PreferenciasStore by lazy { PreferenciasStore(this) }
+
     override fun onCreate() {
         super.onCreate()
         val db = CafeDatabase.obtener(this)
@@ -37,13 +42,10 @@ class CafeApp : Application() {
     }
 }
 
-/**
- * Atajo para llegar al repositorio desde cualquier Composable sin tener que
- * castear el contexto a mano.
- */
-val Context.cafeApp: CafeApp
-    get() = applicationContext as CafeApp
-
-/** Repositorio de la app leido desde el contexto de la pantalla. */
+/** Atajo para llegar al repositorio desde cualquier pantalla. */
 val Context.cafeRepository: CafeRepository
-    get() = cafeApp.repositorio
+    get() = (applicationContext as CafeApp).repositorio
+
+/** Atajo para llegar a las preferencias desde cualquier pantalla. */
+val Context.cafePreferencias: PreferenciasStore
+    get() = (applicationContext as CafeApp).preferencias

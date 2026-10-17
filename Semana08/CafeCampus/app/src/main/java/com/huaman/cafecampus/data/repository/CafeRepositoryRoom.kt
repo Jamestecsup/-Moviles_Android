@@ -11,6 +11,7 @@ import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
 import com.huaman.cafecampus.model.EstadoPedido
 import com.huaman.cafecampus.model.ItemCarrito
+import com.huaman.cafecampus.model.Rol
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -37,6 +38,9 @@ class CafeRepositoryRoom(
 
     override suspend fun login(correo: String, clave: String): Usuario? =
         usuarioDao.login(correo.trim(), clave)
+
+    override suspend fun usuarioDelRol(rol: Rol): Usuario? =
+        usuarioDao.porRol(rol.name)
 
     // -----------------------------------------------------------------------
     // Productos
