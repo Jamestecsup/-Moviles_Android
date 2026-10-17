@@ -1,6 +1,10 @@
 package com.huaman.cafecampus.data.repository
 
 import com.huaman.cafecampus.data.local.entity.Producto
+import com.huaman.cafecampus.data.local.entity.Usuario
+import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
+import com.huaman.cafecampus.model.EstadoPedido
+import com.huaman.cafecampus.model.ItemCarrito
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,42 +15,73 @@ import kotlinx.coroutines.flow.Flow
  * luego a la nube, SIN cambiar ViewModels ni pantallas.
  *
  * Implementacion local: [CafeRepositoryRoom] (SQLite / cafecampus.db).
+ *
+ * REGLA DE ORO
+ *  - lo que debe ACTUALIZAR la pantalla -> Flow (sin `suspend`)
+ *  - lo que cambia datos UNA sola vez  -> `suspend`
+ *  No se reemplazan, se complementan.
  */
 interface CafeRepository {
 
     // -----------------------------------------------------------------------
-    // Productos (ejemplo resuelto que trae el proyecto base)
+    // Usuarios
+    // -----------------------------------------------------------------------
+
+    /** Login. Devuelve el Usuario o null si el correo/clave no coinciden. */
+    suspend fun login(correo: String, clave: String): Usuario?
+
+    // -----------------------------------------------------------------------
+    // Productos
     // -----------------------------------------------------------------------
 
     /** Lectura que actualiza la pantalla -> Flow (sin `suspend`). */
     fun observarProductos(): Flow<List<Producto>>
 
+    /** Inserta si es nuevo (id == 0) o actualiza si ya existe. */
     suspend fun guardarProducto(p: Producto)
 
     suspend fun eliminarProducto(p: Producto)
 
     suspend fun cambiarDisponibilidad(id: Int, disponible: Boolean)
 
-    // TODO (Paso 4): agregar Usuarios, Pedidos y Panel.
+    // -----------------------------------------------------------------------
+    // Pedidos
+    // -----------------------------------------------------------------------
+
+    /**
+     * Crea un pedido a partir del carrito: convierte cada [ItemCarrito] en una
+     * linea `DetallePedido` copiando nombre y precio del producto, calcula el
+     * total y llama al DAO transaccional.
+     *
+     * @return id del pedido creado.
+     */
+    suspend fun crearPedido(
+        clienteId: Int,
+        items: List<ItemCarrito>,
+        horaRecojo: String,
+        pago: String,
+        nota: String
+    ): Long
+
+    /** Historial del estudiante. */
+    fun observarPedidosCliente(clienteId: Int): Flow<List<PedidoConDetalle>>
+
+    /** Bandeja del administrador, filtrada por estado. */
+    fun observarPedidosPorEstado(estado: EstadoPedido): Flow<List<PedidoConDetalle>>
+
+    /** Un pedido concreto, para la pantalla de seguimiento. */
+    fun observarPedido(id: Int): Flow<PedidoConDetalle?>
+
+    /** El administrador avanza (o cancela) el estado de un pedido. */
+    suspend fun cambiarEstado(pedidoId: Int, estado: EstadoPedido)
 
     // -----------------------------------------------------------------------
-    // Usuarios - se completa en el Paso 4
+    // Panel de control
     // -----------------------------------------------------------------------
-    // suspend fun login(correo: String, clave: String): Usuario?
 
-    // -----------------------------------------------------------------------
-    // Pedidos - se completa en el Paso 4
-    // -----------------------------------------------------------------------
-    // suspend fun crearPedido(clienteId: Int, items: List<ItemCarrito>,
-    //                          horaRecojo: String, pago: String, nota: String): Long
-    // fun observarPedidosCliente(clienteId: Int): Flow<List<PedidoConDetalle>>
-    // fun observarPedidosPorEstado(estado: EstadoPedido): Flow<List<PedidoConDetalle>>
-    // fun observarPedido(id: Int): Flow<PedidoConDetalle?>
-    // suspend fun cambiarEstado(pedidoId: Int, estado: EstadoPedido)
+    /** Suma de los pedidos no cancelados desde el inicio del dia. */
+    fun observarVentasHoy(inicioDia: Long): Flow<Double>
 
-    // -----------------------------------------------------------------------
-    // Panel de control - se completa en el Paso 4
-    // -----------------------------------------------------------------------
-    // fun observarVentasHoy(inicioDia: Long): Flow<Double>
-    // fun observarCantidadPorEstado(estado: EstadoPedido): Flow<Int>
+    /** Cuantos pedidos hay en un estado (contadores del panel). */
+    fun observarCantidadPorEstado(estado: EstadoPedido): Flow<Int>
 }
