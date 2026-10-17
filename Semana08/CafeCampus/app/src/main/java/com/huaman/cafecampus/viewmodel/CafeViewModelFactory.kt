@@ -11,22 +11,35 @@ import com.huaman.cafecampus.data.repository.CafeRepository
  * Los ViewModels reciben el REPOSITORY (interface) y las PREFERENCIAS, nunca
  * el DAO. Esta fabrica es la que hace esa conexion, y es el unico lugar que
  * conoce las dos cosas.
+ *
+ * OJO CON LAS INSTANCIAS COMPARTIDAS: el carrito vive en [MenuViewModel] y lo
+ * necesita tambien [PedidosClienteViewModel] para leerlo y vaciarlo al
+ * confirmar. Si la fabrica creara dos MenuViewModel distintos, el carrito de la
+ * pantalla de confirmacion seria SIEMPRE vacio. Por eso las instancias se
+ * guardan con `by lazy` y se devuelven siempre las mismas.
  */
 class CafeViewModelFactory(
     private val repo: CafeRepository,
     private val prefs: PreferenciasStore
 ) : ViewModelProvider.Factory {
 
+    /** Carrito y productos del menu. Compartido con PedidosClienteViewModel. */
+    val menu: MenuViewModel by lazy { MenuViewModel(repo) }
+
+    val sesion: SesionViewModel by lazy { SesionViewModel(repo, prefs) }
+
+    val pedidosCliente: PedidosClienteViewModel by lazy { PedidosClienteViewModel(repo, menu) }
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
-        modelClass.isAssignableFrom(MenuViewModel::class.java) ->
-            MenuViewModel(repo) as T
+        modelClass.isAssignableFrom(MenuViewModel::class.java) -> menu as T
 
-        modelClass.isAssignableFrom(SesionViewModel::class.java) ->
-            SesionViewModel(repo, prefs) as T
+        modelClass.isAssignableFrom(SesionViewModel::class.java) -> sesion as T
 
-        // TODO (Paso 9/10/11): registrar PedidosClienteViewModel,
-        // PanelAdminViewModel, PedidosAdminViewModel y MenuAdminViewModel.
+        modelClass.isAssignableFrom(PedidosClienteViewModel::class.java) -> pedidosCliente as T
+
+        // TODO (Paso 10/11): registrar PanelAdminViewModel,
+        // PedidosAdminViewModel y MenuAdminViewModel.
 
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     }
