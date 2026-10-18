@@ -1,12 +1,6 @@
 *.iml
 .gradle/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
 .DS_Store
 /build
 /app/build
@@ -16,5 +10,8 @@
 local.properties
 .kotlin/
 
-# Generado por Gradle segun la maquina: no va al repositorio
+# Configuracion local del IDE: es de cada maquina, no va al repositorio
+/.idea/
+
+# Generado por Gradle segun la maquina
 gradle/gradle-daemon-jvm.properties
