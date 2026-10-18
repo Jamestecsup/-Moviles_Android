@@ -191,7 +191,11 @@ fun NavCafe(
                     vm = sesion,
                     onIngresoExitoso = { rolIngresado ->
                         navController.navigate(pantallaPrincipalDeRol(rolIngresado)) {
-                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                            // Limpia toda la pila: el Login no debe quedar
+                            // atras (si no, "atras" vuelve a la pantalla de
+                            // entrada).
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 )
@@ -206,6 +210,7 @@ fun NavCafe(
                 MenuScreen(
                     vm = menu,
                     unidadesCarrito = unidades,
+                    nombreUsuario = usuario?.nombre,
                     onCarrito = { navController.navigate(Rutas.CONFIRMAR_PEDIDO) },
                     onProducto = { id ->
                         menu.abrirProducto(id)

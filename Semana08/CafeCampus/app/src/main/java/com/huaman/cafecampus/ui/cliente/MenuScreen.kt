@@ -54,6 +54,7 @@ fun MenuScreen(
     onProducto: (Int) -> Unit,
     modifier: Modifier = Modifier,
     unidadesCarrito: Int = 0,
+    nombreUsuario: String? = null,
     onCarrito: () -> Unit = {}
 ) {
     val productos by vm.productos.collectAsStateWithLifecycle()
@@ -80,11 +81,12 @@ fun MenuScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Hola, Juan!",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                val primeraLetra = nombreUsuario?.trim()?.firstOrNull()?.uppercase()
+            Text(
+                text = if (nombreUsuario.isNullOrBlank()) "Hola!" else "Hola, $primeraLetra!",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground
+            )
                 Text(
                     text = "Que te antoja hoy?",
                     style = MaterialTheme.typography.bodyMedium,

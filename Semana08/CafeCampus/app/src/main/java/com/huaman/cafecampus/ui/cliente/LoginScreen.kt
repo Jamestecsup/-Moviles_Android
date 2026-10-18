@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,14 @@ fun LoginScreen(
     val rol by vm.rolSeleccionado.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
     val cargando by vm.cargando.collectAsStateWithLifecycle()
+    val usuario by vm.usuarioActual.collectAsStateWithLifecycle()
+
+    // El ViewModel confirma el login (y guarda el perfil en DataStore).
+    // Cuando llega el Usuario, recien ahi la pantalla navega a su grafo.
+    LaunchedEffect(usuario?.id) {
+        val u = usuario ?: return@LaunchedEffect
+        onIngresoExitoso(u.rolTipado)
+    }
 
     var correo by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
