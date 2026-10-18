@@ -81,9 +81,15 @@ fun MenuScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                val primeraLetra = nombreUsuario?.trim()?.firstOrNull()?.uppercase()
-            Text(
-                text = if (nombreUsuario.isNullOrBlank()) "Hola!" else "Hola, $primeraLetra!",
+                // "Juan Perez" -> "Juan"
+    val nombreCorto = nombreUsuario
+        ?.trim()
+        ?.split(" ")
+        ?.firstOrNull()
+        ?.takeIf { it.isNotBlank() }
+
+    Text(
+                text = if (nombreCorto == null) "Hola!" else "Hola, $nombreCorto!",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground
             )

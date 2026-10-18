@@ -39,6 +39,7 @@ import com.huaman.cafecampus.ui.components.AppTopBar
 import com.huaman.cafecampus.ui.components.IconoContador
 import com.huaman.cafecampus.ui.components.EstadoColores
 import com.huaman.cafecampus.ui.components.soles
+import com.huaman.cafecampus.ui.components.plural
 import com.huaman.cafecampus.viewmodel.PanelAdminViewModel
 
 /**
@@ -142,7 +143,7 @@ fun PanelScreen(
                             )
                         }
                         Text(
-                            text = "$pedidosHoy pedidos",
+                            text = plural(pedidosHoy, "pedido", "pedidos"),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onPrimary
                         )

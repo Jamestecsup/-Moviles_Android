@@ -44,7 +44,7 @@ fun PedidosAdminScreen(
     vm: PedidosAdminViewModel,
     onPedido: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onAtras: () -> Unit = {}
+    onAtras: (() -> Unit)? = null
 ) {
     val pedidos by vm.pedidos.collectAsStateWithLifecycle()
     val estado by vm.estadoSeleccionado.collectAsStateWithLifecycle()

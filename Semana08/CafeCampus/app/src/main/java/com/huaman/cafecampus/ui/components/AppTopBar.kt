@@ -65,10 +65,10 @@ fun AppTopBar(
             }
         },
         actions = {
+            // OJO: este Box NO debe usar fillMaxWidth(), porque se comeria el
+            // ancho del titulo y lo dejaria invisible.
             Box(
-                modifier = Modifier
-                    .padding(end = 4.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(end = 4.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 accion?.invoke()
