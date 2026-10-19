@@ -1,5 +1,9 @@
 package com.huaman.cafecampus.ui.admin
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,12 +19,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -34,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.ui.components.AppTopBar
@@ -42,6 +49,9 @@ import com.huaman.cafecampus.ui.components.CafeButtonSecundario
 import com.huaman.cafecampus.ui.components.CafeTextField
 import com.huaman.cafecampus.ui.components.ImagenProducto
 import com.huaman.cafecampus.ui.theme.EstadoPreparandoContenedor
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 
 /**
  * Nuevo / editar producto (mockup 6).
@@ -49,6 +59,10 @@ import com.huaman.cafecampus.ui.theme.EstadoPreparandoContenedor
  * Sirve para los dos casos: si recibe un producto con id != 0 edita ese, si no
  * crea uno nuevo. El ViewModel valida que el nombre no este vacio y que el
  * precio sea mayor que 0.
+ *
+ * Ahora tambien permite subir una foto de la galeria. Si el usuario no
+ * selecciona ninguna, se usa el icono vectorial definido por la columna
+ * `icono` (comportamiento original).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +78,8 @@ fun FormularioProductoScreen(
         categoria: String,
         precio: String,
         icono: String,
-        disponible: Boolean
+        disponible: Boolean,
+        imagenRuta: String?
     ) -> Unit,
     modifier: Modifier = Modifier,
     onCancelar: () -> Unit = {},
@@ -81,20 +96,48 @@ fun FormularioProductoScreen(
     }
     var icono by remember(producto?.id) { mutableStateOf(producto?.icono ?: "plato") }
     var disponible by remember(producto?.id) { mutableStateOf(producto?.disponible ?: true) }
+    /** Ruta de la imagen de galeria seleccionada, o null para usar el icono vectorial */
+    var rutaImagen by remember(producto?.id) {
+        mutableStateOf(producto?.imagenRuta)
+    }
 
     var menuCategoriasAbierto by remember { mutableStateOf(false) }
 
-    // Producto de prueba para poder previsualizar la foto / icono mientras se
-    // escribe. Si ya se esta editando, se usa el original.
-    val vistaPrevia = remember(producto, nombre, icono) {
-        producto?.copy(nombre = nombre.ifBlank { producto.nombre }, icono = icono)
+    val contexto = LocalContext.current
+
+    // Seleccionar imagen de galeria
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = OpenDocument(),
+        onResult = { uri: Uri? ->
+            uri?.let { selectedUri ->
+                val res = contexto.contentResolver
+                val nombreArchivo = "producto_${System.currentTimeMillis()}.jpg"
+                val archivoDestino = File(contexto.filesDir, nombreArchivo)
+                res.openInputStream(selectedUri)?.use { input ->
+                    archivoDestino.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                    rutaImagen = archivoDestino.absolutePath
+                }
+            }
+        }
+    )
+
+    // Producto de prueba para poder previsualizar la imagen/icono mientras se escribe
+    val vistaPrevia = remember(producto, nombre, icono, rutaImagen) {
+        producto?.copy(
+            nombre = nombre.ifBlank { producto.nombre },
+            icono = icono,
+            imagenRuta = rutaImagen
+        )
             ?: Producto(
                 nombre = nombre.ifBlank { "Nuevo producto" },
                 descripcion = descripcion,
                 categoria = categoria,
                 precio = precio.toDoubleOrNull() ?: 0.0,
                 disponible = disponible,
-                icono = icono
+                icono = icono,
+                imagenRuta = rutaImagen
             )
     }
 
@@ -119,12 +162,9 @@ fun FormularioProductoScreen(
                     .height(96.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(EstadoPreparandoContenedor)
-                    .clickable {
-                        // Tocar la imagen cambia de icono, como el
-                        // "Toca para elegir color" del mockup.
-                        val i = iconos.indexOf(icono)
-                        icono = iconos[(i + 1).coerceAtLeast(0) % iconos.size]
-                    },
+                    .clickable(onClick = {
+                        galleryLauncher.launch(arrayOf("image/*"))
+                    }),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(
@@ -135,20 +175,39 @@ fun FormularioProductoScreen(
                 ) {
                     ImagenProducto(
                         producto = vistaPrevia,
-                        modifier = Modifier.size(72.dp),
+                        imagenRutaPersonalizada = rutaImagen,
+                        modifier = Modifier
+                            .size(72.dp),
                         tamanio = 36
                     )
                     Column(modifier = Modifier.padding(start = 14.dp)) {
                         Text(
-                            text = "Imagen del producto",
+                            text = if (rutaImagen != null) "Imagen de galeria" else "Imagen del producto",
                             style = MaterialTheme.typography.titleSmall,
                             color = com.huaman.cafecampus.ui.theme.EstadoPreparando
                         )
                         Text(
-                            text = "Toca para elegir icono",
+                            text = if (rutaImagen != null) "Toca para cambiarla" else "Toca para elegir imagen",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                    if (rutaImagen != null) {
+                        Box(
+                            modifier = Modifier
+                                .size(26.dp)
+                                .clip(RoundedCornerShape(13.dp))
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .clickable { rutaImagen = null },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Quitar imagen",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
                     }
                 }
             }
@@ -281,7 +340,8 @@ fun FormularioProductoScreen(
                         categoria,
                         precio,
                         icono,
-                        disponible
+                        disponible,
+                        rutaImagen
                     )
                 },
                 modifier = Modifier.padding(top = 20.dp)

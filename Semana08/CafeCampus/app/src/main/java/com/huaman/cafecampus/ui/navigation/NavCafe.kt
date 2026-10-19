@@ -375,8 +375,8 @@ fun NavCafe(
                     categorias = vm.categoriasFormulario,
                     iconos = vm.iconos,
                     error = error,
-                    onGuardar = { idForm, nombre, desc, cat, prec, ico, disp ->
-                        vm.guardar(idForm, nombre, desc, cat, prec, ico, disp) {
+                    onGuardar = { idForm, nombre, desc, cat, prec, ico, disp, imagenRuta ->
+                        vm.guardar(idForm, nombre, desc, cat, prec, ico, disp, imagenRuta) {
                             navController.popBackStack()
                         }
                     },

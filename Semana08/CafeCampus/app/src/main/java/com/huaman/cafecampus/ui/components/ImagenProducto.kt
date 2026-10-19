@@ -20,26 +20,23 @@ import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.data.local.entity.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.Normalizer
 
 /**
- * Imagenes de producto.
+ * Utilidades para imagenes de producto.
  *
- * Las fotos viven en `app/src/main/assets/img/productos/` (descargadas de
- * Wikimedia Commons, ver ATRIBUCIONES.md). Se leen por convencion:
- * el nombre del producto se convierte en un "slug" y se busca
- * `assets/img/productos/<slug>.jpg`.
+ * Las fotos de la galeria se guardan en el almacenamiento privado de la app
+ * y se referencia por su ruta absoluta en [Producto.imagenRuta].
  *
- * ```
- * "Cafe americano"    -> cafe_americano.jpg
- * "Sandwich de pollo" -> sandwich_pollo.jpg
- * "Menu del dia"      -> menu_del_dia.jpg
- * "Empanada"          -> empanada.jpg
- * ```
+ * object ImagenProductos
+ *   - slug(nombre): convierte "Cafe americano" -> "cafe_americano"
+ *   - archivoDe(nombre): "img/productos/cafe_americano.jpg"
+ *   - leer(context, nombre): lee de assets (imagenes genericas de Wikimedia Commons)
+ *   - leerArchivo(context, ruta): lee de un archivo guardado en el dispositivo
  *
- * Si el archivo NO existe (por ejemplo, un producto nuevo creado por el
- * administrador desde el formulario), la app cae automaticamente al icono
- * vectorial [ProductoIcono]. Borrar un .jpg no rompe la compilacion.
+ * Si no hay archivo de galeria, se usa la imagen de assets o, como ultimo
+ * recurso, el icono vectorial [ProductoIcono].
  */
 object ImagenProductos {
     const val CARPETA = "img/productos"
@@ -52,7 +49,7 @@ object ImagenProductos {
             .lowercase()
 
         return sinTildes
-            // quita conectores: "de", "del", "la", "el", "con", "y"
+            // quita conectores: "de", "del", "la", "el", "los", "las", "con", "y"
             .replace(Regex("\\b(de|del|la|el|los|las|con|y)\\b"), " ")
             .replace(Regex("[^a-z0-9]+"), "_")
             .trim('_')
@@ -64,7 +61,7 @@ object ImagenProductos {
         return candidato
     }
 
-    /** Intenta leer la foto. Devuelve null si no existe. */
+    /** Intenta leer la foto de assets. Devuelve null si no existe. */
     fun leer(context: Context, nombre: String): ImageBitmap? {
         val ruta = archivoDe(nombre) ?: return null
         return try {
@@ -75,11 +72,21 @@ object ImagenProductos {
             null // no hay foto para este producto -> se usa el icono
         }
     }
+
+    /** Lee una imagen guardada en el almacenamiento privado de la app. */
+    fun leerArchivo(context: Context, ruta: String): ImageBitmap? {
+        return try {
+            File(ruta).inputStream().use { stream ->
+                BitmapFactory.decodeStream(stream)?.asImageBitmap()
+            }
+        } catch (e: Exception) {
+            null // archivo no existe o no se puede leer -> se usa el icono
+        }
+    }
 }
 
 /**
- * Carga la foto del producto una sola vez y la recuerda.
- * La lectura ocurre en Dispatchers.IO porque toca el disco.
+ * Carga la foto de assets de un producto una sola vez y la recuerda.
  */
 @Composable
 fun rememberFotoProducto(nombre: String): ImageBitmap? {
@@ -94,20 +101,42 @@ fun rememberFotoProducto(nombre: String): ImageBitmap? {
 }
 
 /**
+ * Carga una imagen guardada en el dispositivo una sola vez y la recuerda.
+ */
+@Composable
+fun rememberImagenArchivo(ruta: String): ImageBitmap? {
+    val context = LocalContext.current
+    val estado = produceState<ImageBitmap?>(initialValue = null, key1 = ruta) {
+        value = withContext(Dispatchers.IO) {
+            ImagenProductos.leerArchivo(context, ruta)
+        }
+    }
+    return estado.value
+}
+
+/**
  * Dibuja la foto del producto dentro de un cuadro redondeado de [tamanio] dp.
  *
- * - Si hay foto en assets -> la muestra.
- * - Si no hay -> muestra [ProductoIcono] con el icono de la columna `icono`.
+ * - Si se recibe [imagenRutaPersonalizada] y existe un archivo, la muestra.
+ * - Si no, intenta leer la foto de assets del producto.
+ * - Si tampoco existe, muestra [ProductoIcono] con el icono de la columna `icono`.
  *
  * Nunca falla: siempre se ve algo.
  */
 @Composable
 fun ImagenProducto(
     producto: Producto,
+    imagenRutaPersonalizada: String? = null,
     modifier: Modifier = Modifier,
     tamanio: Int = 56
 ) {
-    val foto = rememberFotoProducto(producto.nombre)
+    val ruta = imagenRutaPersonalizada ?: producto.imagenRuta
+
+    val foto = if (ruta != null) {
+        rememberImagenArchivo(ruta)
+    } else {
+        rememberFotoProducto(producto.nombre)
+    }
 
     if (foto != null) {
         Image(
@@ -134,9 +163,15 @@ fun ImagenProducto(
 @Composable
 fun ImagenProductoGrande(
     producto: Producto,
+    imagenRutaPersonalizada: String? = null,
     modifier: Modifier = Modifier
 ) {
-    val foto = rememberFotoProducto(producto.nombre)
+    val ruta = imagenRutaPersonalizada ?: producto.imagenRuta
+    val foto = if (ruta != null) {
+        rememberImagenArchivo(ruta)
+    } else {
+        rememberFotoProducto(producto.nombre)
+    }
 
     Box(modifier = modifier) {
         if (foto != null) {
@@ -155,3 +190,6 @@ fun ImagenProductoGrande(
         }
     }
 }
+
+/** Altura estandar del area de imagen; se usa en el Carrito tambien. */
+val AlturaImagenDetalle = 220.dp

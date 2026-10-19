@@ -59,6 +59,9 @@ class MenuAdminViewModel(
      *
      * Ademas se avisa si el nombre ya existe en otro producto, porque
      * `productos.nombre` es clave candidata (UNIQUE).
+     *
+     * [imagenRuta] es la ruta de una foto de galeria, o null para usar el
+     * icono vectorial.
      */
     fun guardar(
         id: Int,
@@ -68,6 +71,7 @@ class MenuAdminViewModel(
         precioTexto: String,
         icono: String,
         disponible: Boolean,
+        imagenRuta: String?,
         alGuardar: () -> Unit
     ) {
         viewModelScope.launch {
@@ -101,7 +105,8 @@ class MenuAdminViewModel(
                     categoria = categoria,
                     precio = precio,
                     disponible = disponible,
-                    icono = icono
+                    icono = icono,
+                    imagenRuta = imagenRuta
                 )
             )
 
