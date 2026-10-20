@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS `productos` (
     `categoria`   TEXT    NOT NULL,      -- Desayunos | Almuerzos | Bebidas | Postres
     `precio`      REAL    NOT NULL,      -- en soles (S/)
     `disponible`  INTEGER NOT NULL,      -- 1 = se puede pedir, 0 = agotado
-    `icono`       TEXT    NOT NULL       -- cafe|plato|jugo|pan|botella|dulce
+    `icono`       TEXT    NOT NULL,      -- cafe|plato|jugo|pan|botella|dulce
+    `imagenRuta`  TEXT                -- foto de galeria, o NULL = usar el icono
 );
 
 -- clave candidata
@@ -123,6 +124,23 @@ CREATE INDEX IF NOT EXISTS `index_detalle_pedido_pedidoId` ON `detalle_pedido` (
 CREATE UNIQUE INDEX IF NOT EXISTS `index_detalle_pedido_pedidoId_productoId`
     ON `detalle_pedido` (`pedidoId`, `productoId`);
 
+-- -----------------------------------------------------------------------------
+-- promociones : descuentos que crea el administrador
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `promociones` (
+    `id`                  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    `tipo`                TEXT    NOT NULL,   -- PRODUCTO | CATEGORIA
+    `valorReferencia`     TEXT    NOT NULL,   -- nombre del producto o de la categoria
+    `descuentoPorcentaje` REAL    NOT NULL,   -- ej. 20.0 = 20% de descuento
+    `fechaInicio`         INTEGER NOT NULL,   -- System.currentTimeMillis()
+    `fechaFin`            INTEGER NOT NULL,
+    `activo`              INTEGER NOT NULL    -- 1 = vigente, 0 = desactivada
+);
+
+-- clave compuesta candidata: una sola promocion por tipo + referencia
+CREATE UNIQUE INDEX IF NOT EXISTS `index_promociones_tipo_valorReferencia`
+    ON `promociones` (`tipo`, `valorReferencia`);
+
 
 -- =============================================================================
 --  3. DATOS INICIALES  (los mismos que siembra data/local/DatosIniciales.kt)
@@ -142,6 +160,12 @@ INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `categoria`, `precio`, `
 INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `clave`, `rol`) VALUES
     (1, 'Juan Perez',  'juan@campus.test', '1234',  'CLIENTE'),
     (2, 'Ana Torres',  'admin@cafe.test',  'admin', 'ADMIN');
+
+-- 3.3 Promociones iniciales
+--     fechaFin = ahora + 7 dias (categoria) | ahora + 3 dias (producto)
+INSERT INTO `promociones` (`id`, `tipo`, `valorReferencia`, `descuentoPorcentaje`, `fechaInicio`, `fechaFin`, `activo`) VALUES
+    (1, 'CATEGORIA', 'Bebidas',        20.0, strftime('%s','now') * 1000, strftime('%s','now') * 1000 + 604800000, 1),
+    (2, 'PRODUCTO',  'Cafe americano', 50.0, strftime('%s','now') * 1000, strftime('%s','now') * 1000 + 259200000, 1);
 
 
 -- =============================================================================
