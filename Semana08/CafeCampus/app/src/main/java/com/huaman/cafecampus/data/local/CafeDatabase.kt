@@ -5,10 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.huaman.cafecampus.data.local.dao.PedidoDao
+import com.huaman.cafecampus.data.local.dao.PromocionDao
 import com.huaman.cafecampus.data.local.dao.ProductoDao
 import com.huaman.cafecampus.data.local.dao.UsuarioDao
 import com.huaman.cafecampus.data.local.entity.DetallePedido
 import com.huaman.cafecampus.data.local.entity.Pedido
+import com.huaman.cafecampus.data.local.entity.Promocion
 import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.data.local.entity.Usuario
 
@@ -27,7 +29,8 @@ import com.huaman.cafecampus.data.local.entity.Usuario
         Producto::class,
         Usuario::class,
         Pedido::class,
-        DetallePedido::class
+        DetallePedido::class,
+        Promocion::class
     ],
     version = 2,
     exportSchema = false
@@ -39,6 +42,8 @@ abstract class CafeDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
 
     abstract fun pedidoDao(): PedidoDao
+
+    abstract fun promocionDao(): PromocionDao
 
     companion object {
         private const val NOMBRE = "cafecampus.db"

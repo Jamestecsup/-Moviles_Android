@@ -24,6 +24,7 @@ object Rutas {
     const val SEGUIMIENTO = "seguimiento/{pedidoId}"
     const val MIS_PEDIDOS = "misPedidos"
     const val PERFIL = "perfil"
+    const val PROMOCIONES = "promociones"
 
     // -----------------------------------------------------------------------
     // Administrador (4 items: Panel, Pedidos, Menu, Ajustes)
@@ -51,4 +52,6 @@ object Rutas {
 
     const val ARG_PRODUCTO_ID = "productoId"
     const val ARG_PEDIDO_ID = "pedidoId"
+
+    fun promociones() = "promociones"
 }

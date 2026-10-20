@@ -36,6 +36,8 @@ class CafeViewModelFactory(
 
     val menuAdmin: MenuAdminViewModel by lazy { MenuAdminViewModel(repo) }
 
+    val promociones: PromocionesViewModel by lazy { PromocionesViewModel(repo) }
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
         modelClass.isAssignableFrom(MenuViewModel::class.java) -> menu as T
@@ -49,6 +51,8 @@ class CafeViewModelFactory(
         modelClass.isAssignableFrom(PedidosAdminViewModel::class.java) -> pedidosAdmin as T
 
         modelClass.isAssignableFrom(MenuAdminViewModel::class.java) -> menuAdmin as T
+
+        modelClass.isAssignableFrom(PromocionesViewModel::class.java) -> promociones as T
 
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     }

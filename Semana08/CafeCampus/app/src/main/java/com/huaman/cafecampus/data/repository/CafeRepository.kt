@@ -1,6 +1,8 @@
 package com.huaman.cafecampus.data.repository
 
+import com.huaman.cafecampus.data.local.entity.Pedido
 import com.huaman.cafecampus.data.local.entity.Producto
+import com.huaman.cafecampus.data.local.entity.Promocion
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
 import com.huaman.cafecampus.model.EstadoPedido
@@ -97,4 +99,20 @@ interface CafeRepository {
 
     /** Horarios de recojo de hoy, para el grafico de barras del panel. */
     fun observarHorasRecojoHoy(inicioDia: Long): Flow<List<String>>
+
+    // -----------------------------------------------------------------------
+    // Promociones
+    // -----------------------------------------------------------------------
+
+    /** Lectura que actualiza la pantalla -> Flow (sin `suspend`). */
+    fun observarPromociones(): Flow<List<Promocion>>
+
+    /** Inserta si es nuevo (id == 0) o actualiza si ya existe. */
+    suspend fun guardarPromocion(p: Promocion): Unit
+
+    /** Elimina una promocion. */
+    suspend fun eliminarPromocion(p: Promocion)
+
+    /** Desactiva una promocion (pone activo = false). */
+    suspend fun desactivarPromocion(id: Int)
 }

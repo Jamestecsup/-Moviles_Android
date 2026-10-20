@@ -2,10 +2,15 @@
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -38,15 +43,18 @@ import com.huaman.cafecampus.ui.admin.FormularioProductoScreen
 import com.huaman.cafecampus.ui.admin.MenuAdminScreen
 import com.huaman.cafecampus.ui.admin.PanelScreen
 import com.huaman.cafecampus.ui.admin.PedidosAdminScreen
+import com.huaman.cafecampus.ui.admin.FormularioPromocionScreen
 import com.huaman.cafecampus.ui.cliente.ConfirmarPedidoScreen
 import com.huaman.cafecampus.ui.cliente.DetalleProductoScreen
 import com.huaman.cafecampus.ui.cliente.LoginScreen
 import com.huaman.cafecampus.ui.cliente.MisPedidosScreen
 import com.huaman.cafecampus.ui.cliente.MenuScreen
 import com.huaman.cafecampus.ui.cliente.PerfilScreen
+import com.huaman.cafecampus.ui.cliente.PromocionesScreen
 import com.huaman.cafecampus.ui.cliente.SeguimientoScreen
 import com.huaman.cafecampus.ui.cliente.SplashScreen
 import com.huaman.cafecampus.viewmodel.CafeViewModelFactory
+import com.huaman.cafecampus.viewmodel.PromocionesViewModel
 import com.huaman.cafecampus.viewmodel.SesionViewModel
 import kotlinx.coroutines.launch
 
@@ -57,17 +65,19 @@ private data class ItemBarra(
     val icono: ImageVector
 )
 
-/** 3 items para el cliente. */
+/** 4 items para el cliente (incluye Promociones). */
 private val BARRA_CLIENTE = listOf(
     ItemBarra(Rutas.MENU, "Menu", Icons.Filled.Home),
+    ItemBarra(Rutas.PROMOCIONES, "Promociones", Icons.Filled.LocalOffer),
     ItemBarra(Rutas.MIS_PEDIDOS, "Pedidos", Icons.AutoMirrored.Filled.ReceiptLong),
     ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
 )
 
-/** 4 items para el administrador. */
+/** 5 items para el administrador (incluye Promociones). */
 private val BARRA_ADMIN = listOf(
     ItemBarra(Rutas.PANEL, "Panel", Icons.Filled.BarChart),
     ItemBarra(Rutas.PEDIDOS_ADMIN, "Pedidos", Icons.AutoMirrored.Filled.ReceiptLong),
+    ItemBarra(Rutas.PROMOCIONES, "Promociones", Icons.Filled.LocalOffer),
     ItemBarra(Rutas.MENU_ADMIN, "Menu", Icons.Filled.Restaurant),
     ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Filled.Settings)
 )
@@ -383,6 +393,22 @@ fun NavCafe(
                     onCancelar = { navController.popBackStack() },
                     onAtras = { navController.popBackStack() },
                     onLimpiarError = vm::limpiarError
+                )
+            }
+
+            composable(Rutas.PROMOCIONES) {
+                PromocionesScreen(
+                    vm = factory.promociones,
+                    rol = rol.name,
+                    onEditar = { id ->
+                        navController.navigate(Rutas.formularioProducto(id)) // placeholder: reusa formulario de producto
+                    },
+                    onEliminar = { id ->
+                        // TODO: eliminar promocion por id
+                    },
+                    onNuevo = {
+                        // navegar a formulario de nueva promocion
+                    }
                 )
             }
 

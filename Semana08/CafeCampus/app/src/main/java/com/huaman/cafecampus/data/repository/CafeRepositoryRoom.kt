@@ -2,10 +2,12 @@ package com.huaman.cafecampus.data.repository
 
 import com.huaman.cafecampus.data.local.CafeDatabase
 import com.huaman.cafecampus.data.local.dao.PedidoDao
+import com.huaman.cafecampus.data.local.dao.PromocionDao
 import com.huaman.cafecampus.data.local.dao.ProductoDao
 import com.huaman.cafecampus.data.local.dao.UsuarioDao
 import com.huaman.cafecampus.data.local.entity.DetallePedido
 import com.huaman.cafecampus.data.local.entity.Pedido
+import com.huaman.cafecampus.data.local.entity.Promocion
 import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
@@ -27,10 +29,16 @@ import kotlinx.coroutines.flow.Flow
 class CafeRepositoryRoom(
     private val productoDao: ProductoDao,
     private val usuarioDao: UsuarioDao,
-    private val pedidoDao: PedidoDao
+    private val pedidoDao: PedidoDao,
+    private val promocionDao: PromocionDao
 ) : CafeRepository {
 
-    constructor(db: CafeDatabase) : this(db.productoDao(), db.usuarioDao(), db.pedidoDao())
+    constructor(db: CafeDatabase) : this(
+        db.productoDao(),
+        db.usuarioDao(),
+        db.pedidoDao(),
+        db.promocionDao()
+    )
 
     // -----------------------------------------------------------------------
     // Usuarios
@@ -133,4 +141,21 @@ class CafeRepositoryRoom(
 
     override fun observarHorasRecojoHoy(inicioDia: Long): Flow<List<String>> =
         pedidoDao.horasRecojoDesde(inicioDia)
+
+    // -----------------------------------------------------------------------
+    // Promociones
+    // -----------------------------------------------------------------------
+
+    override fun observarPromociones(): Flow<List<Promocion>> =
+        promocionDao.observarTodos()
+
+    override suspend fun guardarPromocion(p: Promocion): Unit {
+        promocionDao.insertar(p)
+    }
+
+    override suspend fun eliminarPromocion(p: Promocion) =
+        promocionDao.eliminar(p)
+
+    override suspend fun desactivarPromocion(id: Int) =
+        promocionDao.desactivar(id)
 }

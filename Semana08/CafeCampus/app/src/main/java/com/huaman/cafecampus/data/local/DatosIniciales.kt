@@ -1,5 +1,6 @@
 package com.huaman.cafecampus.data.local
 
+import com.huaman.cafecampus.data.local.entity.Promocion
 import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.model.Rol
@@ -30,6 +31,10 @@ object DatosIniciales {
 
         // 2) Los 2 usuarios de la seccion 5 del laboratorio
         USUARIOS.forEach { db.usuarioDao().insertar(it) }
+
+        // 3) Promociones iniciales
+        val promos = db.promocionDao()
+        PROMOCIONES.forEach { promos.insertar(it) }
     }
 
     /**
@@ -102,6 +107,24 @@ object DatosIniciales {
             precio = 3.50,
             disponible = true,
             icono = "botella"
+        )
+    )
+
+    /** Promociones iniciales de la cafeteria. */
+    private val PROMOCIONES = listOf(
+        Promocion(
+            tipo = "CATEGORIA",
+            valorReferencia = Categoria.BEBIDAS,
+            descuentoPorcentaje = 20.0,
+            fechaFin = System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000, // 7 dias
+            activo = true
+        ),
+        Promocion(
+            tipo = "PRODUCTO",
+            valorReferencia = "Café americano",
+            descuentoPorcentaje = 50.0,
+            fechaFin = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000, // 3 dias
+            activo = true
         )
     )
 }
