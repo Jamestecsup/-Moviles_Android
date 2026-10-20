@@ -121,7 +121,7 @@ object DatosIniciales {
         ),
         Promocion(
             tipo = "PRODUCTO",
-            valorReferencia = "Café americano",
+            valorReferencia = "Cafe americano",
             descuentoPorcentaje = 50.0,
             fechaFin = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000, // 3 dias
             activo = true

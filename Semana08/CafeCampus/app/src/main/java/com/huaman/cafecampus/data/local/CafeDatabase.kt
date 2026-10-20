@@ -32,7 +32,7 @@ import com.huaman.cafecampus.data.local.entity.Usuario
         DetallePedido::class,
         Promocion::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class CafeDatabase : RoomDatabase() {
