@@ -5,6 +5,8 @@ import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.data.local.entity.Promocion
 import com.huaman.cafecampus.data.local.entity.Usuario
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
+import com.huaman.cafecampus.data.local.relation.ProductoVendido
+import com.huaman.cafecampus.data.local.relation.TotalPorPago
 import com.huaman.cafecampus.model.EstadoPedido
 import com.huaman.cafecampus.model.ItemCarrito
 import com.huaman.cafecampus.model.Rol
@@ -110,6 +112,16 @@ interface CafeRepository {
 
     /** Horarios de recojo de hoy, para el grafico de barras del panel. */
     fun observarHorasRecojoHoy(inicioDia: Long): Flow<List<String>>
+
+    // -----------------------------------------------------------------------
+    // Reporte del dia (Fase 2)
+    // -----------------------------------------------------------------------
+
+    /** Productos mas vendidos desde [inicioDia], con unidades y total. */
+    fun observarProductosMasVendidos(inicioDia: Long): Flow<List<ProductoVendido>>
+
+    /** Total y cantidad de pedidos por forma de pago desde [inicioDia]. */
+    fun observarTotalesPorFormaDePago(inicioDia: Long): Flow<List<TotalPorPago>>
 
     // -----------------------------------------------------------------------
     // Promociones

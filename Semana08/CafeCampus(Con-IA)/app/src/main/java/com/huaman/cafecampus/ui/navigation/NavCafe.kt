@@ -43,6 +43,7 @@ import com.huaman.cafecampus.ui.admin.FormularioProductoScreen
 import com.huaman.cafecampus.ui.admin.MenuAdminScreen
 import com.huaman.cafecampus.ui.admin.PanelScreen
 import com.huaman.cafecampus.ui.admin.PedidosAdminScreen
+import com.huaman.cafecampus.ui.admin.ReporteScreen
 import com.huaman.cafecampus.ui.admin.FormularioPromocionScreen
 import com.huaman.cafecampus.ui.cliente.ConfirmarPedidoScreen
 import com.huaman.cafecampus.ui.cliente.DetalleProductoScreen
@@ -364,7 +365,8 @@ fun NavCafe(
                 PanelScreen(
                     vm = factory.panelAdmin,
                     onVerTodos = { navController.navigate(Rutas.PEDIDOS_ADMIN) },
-                    onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) }
+                    onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) },
+                    onVerReporte = { navController.navigate(Rutas.REPORTE) }
                 )
             }
 
@@ -472,6 +474,13 @@ fun NavCafe(
                     onCancelar = { navController.popBackStack() },
                     onAtras = { navController.popBackStack() },
                     onLimpiarError = vm::limpiarError
+                )
+            }
+
+            composable(Rutas.REPORTE) {
+                ReporteScreen(
+                    vm = factory.reporte,
+                    onAtras = { navController.popBackStack() }
                 )
             }
 

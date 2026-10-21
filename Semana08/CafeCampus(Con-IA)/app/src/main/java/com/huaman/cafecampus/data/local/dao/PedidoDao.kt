@@ -7,6 +7,8 @@ import androidx.room.Transaction
 import com.huaman.cafecampus.data.local.entity.DetallePedido
 import com.huaman.cafecampus.data.local.entity.Pedido
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
+import com.huaman.cafecampus.data.local.relation.ProductoVendido
+import com.huaman.cafecampus.data.local.relation.TotalPorPago
 import com.huaman.cafecampus.model.EstadoPedido
 import kotlinx.coroutines.flow.Flow
 
@@ -108,4 +110,43 @@ interface PedidoDao {
      */
     @Query("SELECT horaRecojo FROM pedidos WHERE fecha >= :inicio AND estado <> 'CANCELADO'")
     fun horasRecojoDesde(inicio: Long): Flow<List<String>>
+
+    // -----------------------------------------------------------------------
+    // Reporte del dia (Fase 2)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Producto mas vendido desde [inicio], con sus unidades y su total.
+     *
+     * Sale de las LINEAS del pedido, no del pedido: asi se cuenta lo que
+     * realmente se vendio. Los pedidos cancelados no cuentan.
+     */
+    @Query(
+        """
+        SELECT d.nombreProducto AS nombreProducto,
+               SUM(d.cantidad) AS unidades,
+               SUM(d.cantidad * d.precioUnitario) AS total
+        FROM detalle_pedido d
+        JOIN pedidos p ON d.pedidoId = p.id
+        WHERE p.fecha >= :inicio AND p.estado <> 'CANCELADO'
+        GROUP BY d.nombreProducto
+        ORDER BY unidades DESC, total DESC
+        LIMIT :limite
+        """
+    )
+    fun productosMasVendidos(inicio: Long, limite: Int = 5): Flow<List<ProductoVendido>>
+
+    /** Total y cantidad de pedidos por forma de pago desde [inicio]. */
+    @Query(
+        """
+        SELECT pago AS pago,
+               COALESCE(SUM(total), 0.0) AS total,
+               COUNT(*) AS pedidos
+        FROM pedidos
+        WHERE fecha >= :inicio AND estado <> 'CANCELADO'
+        GROUP BY pago
+        ORDER BY total DESC
+        """
+    )
+    fun totalesPorFormaDePago(inicio: Long): Flow<List<TotalPorPago>>
 }

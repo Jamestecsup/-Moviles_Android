@@ -36,6 +36,8 @@ class CafeViewModelFactory(
 
     val menuAdmin: MenuAdminViewModel by lazy { MenuAdminViewModel(repo) }
 
+    val reporte: ReporteViewModel by lazy { ReporteViewModel(repo) }
+
     val promociones: PromocionesViewModel by lazy { PromocionesViewModel(repo) }
 
     @Suppress("UNCHECKED_CAST")
@@ -51,6 +53,8 @@ class CafeViewModelFactory(
         modelClass.isAssignableFrom(PedidosAdminViewModel::class.java) -> pedidosAdmin as T
 
         modelClass.isAssignableFrom(MenuAdminViewModel::class.java) -> menuAdmin as T
+
+        modelClass.isAssignableFrom(ReporteViewModel::class.java) -> reporte as T
 
         modelClass.isAssignableFrom(PromocionesViewModel::class.java) -> promociones as T
 

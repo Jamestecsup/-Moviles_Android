@@ -37,6 +37,7 @@ object Rutas {
     const val MENU_ADMIN = "menuAdmin"
     const val FORMULARIO_PRODUCTO = "formularioProducto?productoId={productoId}"
     const val AJUSTES = "ajustes"
+    const val REPORTE = "reporte"
 
     // -----------------------------------------------------------------------
     // Helpers: construyen la ruta real con sus argumentos

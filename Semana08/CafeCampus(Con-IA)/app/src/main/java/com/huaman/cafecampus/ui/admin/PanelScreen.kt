@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -54,6 +56,7 @@ fun PanelScreen(
     onVerTodos: () -> Unit,
     onPedido: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onVerReporte: () -> Unit = {},
     onPreparar: (PedidoConDetalle) -> Unit = { vm.preparar(it) }
 ) {
     val nuevos by vm.nuevos.collectAsStateWithLifecycle()
@@ -171,6 +174,52 @@ fun PanelScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 14.dp)
+                        )
+                    }
+                }
+            }
+
+            // -------------------------------------------------- reporte del dia
+            item {
+                Card(
+                    onClick = onVerReporte,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 14.dp)
+                        ) {
+                            Text(
+                                text = "Reporte del dia",
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                text = "Producto mas vendido y total por forma de pago",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
