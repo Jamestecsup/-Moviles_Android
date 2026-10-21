@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.model.ItemCarrito
 import com.huaman.cafecampus.ui.components.AppTopBar
@@ -63,6 +64,8 @@ fun ConfirmarPedidoScreen(
     var nota by remember { mutableStateOf("") }
 
     val subtotal = items.sumOf { it.subtotal }
+    val subtotalOriginal = items.sumOf { it.subtotalOriginal }
+    val ahorro = subtotalOriginal - subtotal
     val servicio = 0.0
     val total = subtotal + servicio
 
@@ -198,6 +201,13 @@ fun ConfirmarPedidoScreen(
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     FilaTotal("Subtotal", soles(subtotal))
+                    if (ahorro > 0.0) {
+                        FilaTotal(
+                            etiqueta = "Descuentos",
+                            valor = "- " + soles(ahorro),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     FilaTotal("Servicio", soles(servicio))
                     LineaSeparadora(modifier = Modifier.padding(vertical = 8.dp))
                     Row(
@@ -208,11 +218,21 @@ fun ConfirmarPedidoScreen(
                             text = "Total",
                             style = MaterialTheme.typography.titleSmall
                         )
-                        Text(
-                            text = soles(total),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = soles(total),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            if (ahorro > 0.0) {
+                                Text(
+                                    text = soles(subtotalOriginal + servicio),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textDecoration = TextDecoration.LineThrough
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -270,18 +290,39 @@ private fun LineaResumen(item: ItemCarrito) {
                     maxLines = 1
                 )
             }
+            if (item.tieneDescuento) {
+                Text(
+                    text = "Promocion -${item.descuentoPorcentaje.toInt()}%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
-        Text(
-            text = soles(item.subtotal),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = soles(item.subtotal),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            if (item.tieneDescuento) {
+                Text(
+                    text = soles(item.subtotalOriginal),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textDecoration = TextDecoration.LineThrough
+                )
+            }
+        }
     }
 }
 
 /** Fila etiqueta / valor del bloque de totales. */
 @Composable
-private fun FilaTotal(etiqueta: String, valor: String) {
+private fun FilaTotal(
+    etiqueta: String,
+    valor: String,
+    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -295,7 +336,8 @@ private fun FilaTotal(etiqueta: String, valor: String) {
         )
         Text(
             text = valor,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            color = color
         )
     }
 }

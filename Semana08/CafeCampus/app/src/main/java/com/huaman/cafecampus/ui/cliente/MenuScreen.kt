@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.huaman.cafecampus.data.local.Categoria
@@ -54,6 +55,8 @@ fun MenuScreen(
     onProducto: (Int) -> Unit,
     modifier: Modifier = Modifier,
     unidadesCarrito: Int = 0,
+    totalCarrito: Double = 0.0,
+    totalCarritoOriginal: Double = 0.0,
     nombreUsuario: String? = null,
     onCarrito: () -> Unit = {}
 ) {
@@ -123,15 +126,35 @@ fun MenuScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = if (unidadesCarrito == 0) {
-                        "Vacio"
+                Column(horizontalAlignment = Alignment.End) {
+                    if (unidadesCarrito == 0) {
+                        Text(
+                            text = "Vacio",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     } else {
-                        plural(unidadesCarrito, "producto", "productos")
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                        Text(
+                            text = soles(totalCarrito),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (totalCarrito < totalCarritoOriginal) {
+                            Text(
+                                text = soles(totalCarritoOriginal),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textDecoration = TextDecoration.LineThrough
+                            )
+                        } else {
+                            Text(
+                                text = plural(unidadesCarrito, "producto", "productos"),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
                 Icon(
                     imageVector = Icons.Filled.ShoppingBag,
                     contentDescription = null,
@@ -191,11 +214,13 @@ fun MenuScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             items(filtrados.size, key = { filtrados[it].id }) { indice ->
-                val producto = filtrados[indice]
+                val oferta = filtrados[indice]
                 ProductoCard(
-                    producto = producto,
-                    onClick = { onProducto(producto.id) },
-                    onAgregar = { onProducto(producto.id) }
+                    producto = oferta.producto,
+                    onClick = { onProducto(oferta.id) },
+                    onAgregar = { onProducto(oferta.id) },
+                    descuentoPorcentaje = oferta.descuentoPorcentaje,
+                    precioFinal = oferta.precioFinal
                 )
             }
         }

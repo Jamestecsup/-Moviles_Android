@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.huaman.cafecampus.data.local.Categoria
 import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.data.repository.CafeRepository
+import com.huaman.cafecampus.model.CalculoPromociones
 import com.huaman.cafecampus.model.ItemCarrito
+import com.huaman.cafecampus.model.ProductoEnOferta
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,9 @@ import kotlinx.coroutines.launch
  * Menu del cliente: productos del Repository + carrito del estudiante.
  *
  * Conoce el Repository, NO los Composables y NO el DAO.
+ *
+ * Ademas aplica las promociones vigentes: los productos se exponen como
+ * [ProductoEnOferta], con el precio de lista y el precio final.
  */
 class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
 
@@ -33,13 +38,33 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
                 initialValue = emptyList()
             )
 
+    /**
+     * Promociones vigentes. Es un Flow de Room, asi que si el administrador
+     * crea, edita o desactiva una promocion, los precios del menu se
+     * actualizan solos.
+     */
+    val promociones = repo.observarPromociones()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /**
+     * La carta con el precio final ya calculado (promocion aplicada).
+     */
+    val ofertas: StateFlow<List<ProductoEnOferta>> =
+        combine(productos, promociones) { lista, promos ->
+            lista.map { CalculoPromociones.ofertaDe(it, promos) }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
     /** Categoria seleccionada en los FilterChip. */
     private val _categoria = MutableStateFlow(Categoria.TODAS)
     val categoria: StateFlow<String> = _categoria.asStateFlow()
 
     /** Productos ya filtrados por categoria: es lo que dibuja la pantalla. */
-    val productosVisibles: StateFlow<List<Producto>> =
-        combine(productos, _categoria) { lista, cat ->
+    val productosVisibles: StateFlow<List<ProductoEnOferta>> =
+        combine(ofertas, _categoria) { lista, cat ->
             if (cat == Categoria.TODAS) lista else lista.filter { it.categoria == cat }
         }.stateIn(
             scope = viewModelScope,
@@ -66,11 +91,19 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
             }
         }.asStateFlow()
 
-    /** Total del carrito, para el boton de confirmar. */
+    /** Total del carrito (con promociones aplicadas), para el boton de confirmar. */
     val totalCarrito: StateFlow<Double> =
         MutableStateFlow(0.0).also { flow ->
             viewModelScope.launch {
                 carrito.collect { flow.value = it.sumOf { i -> i.subtotal } }
+            }
+        }.asStateFlow()
+
+    /** Total del carrito si no hubiera promociones (para tachar). */
+    val totalCarritoOriginal: StateFlow<Double> =
+        MutableStateFlow(0.0).also { flow ->
+            viewModelScope.launch {
+                carrito.collect { flow.value = it.sumOf { i -> i.subtotalOriginal } }
             }
         }.asStateFlow()
 
@@ -80,8 +113,17 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
      * REGLA: si el producto YA esta en el carrito, se SUMA la cantidad en vez
      * de duplicar la linea. Esto es lo que hace valida la clave compuesta
      * `(pedidoId, productoId)` de `detalle_pedido`.
+     *
+     * Se guarda el PRECIO FINAL (con la promocion aplicada): si despues el
+     * administrador cambia la promocion, este pedido no se altera.
      */
-    fun agregar(producto: Producto, cantidad: Int = 1, nota: String = "") {
+    fun agregar(
+        producto: Producto,
+        cantidad: Int = 1,
+        nota: String = "",
+        precioUnitario: Double = producto.precio,
+        descuentoPorcentaje: Double = 0.0
+    ) {
         if (!producto.disponible || cantidad <= 0) return
 
         val actual = _carrito.value
@@ -92,14 +134,22 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
                 if (i == indice) {
                     item.copy(
                         cantidad = item.cantidad + cantidad,
-                        nota = if (nota.isNotBlank()) nota else item.nota
+                        nota = if (nota.isNotBlank()) nota else item.nota,
+                        precioUnitario = precioUnitario,
+                        descuentoPorcentaje = descuentoPorcentaje
                     )
                 } else {
                     item
                 }
             }
         } else {
-            actual + ItemCarrito(producto = producto, cantidad = cantidad, nota = nota)
+            actual + ItemCarrito(
+                producto = producto,
+                cantidad = cantidad,
+                nota = nota,
+                precioUnitario = precioUnitario,
+                descuentoPorcentaje = descuentoPorcentaje
+            )
         }
     }
 
@@ -137,15 +187,11 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
      * -------------------------------------------------------------------- */
     val categorias: List<String> = Categoria.paraFiltro
 
-    /** Codigo de producto abierto en la pantalla de detalle, o null. */
-    private val _productoSeleccionado = MutableStateFlow<Producto?>(null)
-    val productoSeleccionado: StateFlow<Producto?> = _productoSeleccionado.asStateFlow()
-
     fun seleccionarCategoria(cat: String) {
         _categoria.value = cat
     }
 
-    fun abrirProducto(id: Int) {
-        _productoSeleccionado.value = productos.value.firstOrNull { it.id == id }
-    }
+    /** La oferta de un producto, con la promocion ya aplicada. */
+    fun ofertaDe(id: Int): ProductoEnOferta? =
+        ofertas.value.firstOrNull { it.id == id }
 }

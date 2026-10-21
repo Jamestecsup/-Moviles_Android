@@ -218,13 +218,16 @@ fun NavCafe(
 
             composable(Rutas.MENU) {
                 val unidades by menu.unidadesCarrito.collectAsStateWithLifecycle()
+                val total by menu.totalCarrito.collectAsStateWithLifecycle()
+                val totalOriginal by menu.totalCarritoOriginal.collectAsStateWithLifecycle()
                 MenuScreen(
                     vm = menu,
                     unidadesCarrito = unidades,
+                    totalCarrito = total,
+                    totalCarritoOriginal = totalOriginal,
                     nombreUsuario = usuario?.nombre,
                     onCarrito = { navController.navigate(Rutas.CONFIRMAR_PEDIDO) },
                     onProducto = { id ->
-                        menu.abrirProducto(id)
                         navController.navigate(Rutas.detalleProducto(id))
                     }
                 )
@@ -236,22 +239,30 @@ fun NavCafe(
             ) { entry ->
                 val id = entry.arguments?.getInt(Rutas.ARG_PRODUCTO_ID) ?: 0
 
-                // El producto se busca SIEMPRE en el Flow de productos: si el
-                // administrador lo marca como agotado mientras esta abierta,
-                // la pantalla se actualiza sola.
-                val productos by menu.productos.collectAsStateWithLifecycle()
-                val producto = productos.firstOrNull { it.id == id }
+                // El producto se busca SIEMPRE en el Flow de ofertas: si el
+                // administrador lo marca como agotado o crea una promocion
+                // mientras esta abierta, la pantalla se actualiza sola.
+                val ofertas by menu.ofertas.collectAsStateWithLifecycle()
+                val oferta = ofertas.firstOrNull { it.id == id }
 
-                if (producto == null) {
+                if (oferta == null) {
                     VolverA(navController, Rutas.MENU)
                 } else {
                     val carrito by menu.carrito.collectAsStateWithLifecycle()
                     DetalleProductoScreen(
-                        producto = producto,
+                        producto = oferta.producto,
+                        descuentoPorcentaje = oferta.descuentoPorcentaje,
+                        precioFinal = oferta.precioFinal,
                         cantidadEnCarrito = carrito.firstOrNull { it.producto.id == id }
                             ?.cantidad ?: 0,
                         onAgregar = { cantidad, nota ->
-                            menu.agregar(producto, cantidad, nota)
+                            menu.agregar(
+                                producto = oferta.producto,
+                                cantidad = cantidad,
+                                nota = nota,
+                                precioUnitario = oferta.precioFinal,
+                                descuentoPorcentaje = oferta.descuentoPorcentaje
+                            )
                             navController.popBackStack()
                         },
                         onAtras = { navController.popBackStack() }

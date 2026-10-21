@@ -76,9 +76,10 @@ class CafeRepositoryRoom(
     /**
      * Convierte el carrito en lineas `DetallePedido`.
      *
-     * IMPORTANTE: se COPIA el nombre y el precio del producto en la linea.
-     * Es una foto del momento: si manana el administrador cambia el precio o
-     * borra el producto, este pedido no se altera ni se rompe.
+     * IMPORTANTE: se COPIA el nombre y el PRECIO FINAL (con la promocion ya
+     * aplicada) en la linea. Es una foto del momento: si manana el administrador
+     * cambia el precio, el precio o la promocion, este pedido no se altera ni
+     * se rompe.
      */
     override suspend fun crearPedido(
         clienteId: Int,
@@ -93,7 +94,7 @@ class CafeRepositoryRoom(
                 productoId = item.producto.id,
                 nombreProducto = item.producto.nombre,
                 cantidad = item.cantidad,
-                precioUnitario = item.producto.precio
+                precioUnitario = item.precioUnitario
             )
         }
 

@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.ui.components.AppTopBar
@@ -58,13 +59,16 @@ fun DetalleProductoScreen(
     cantidadEnCarrito: Int,
     onAgregar: (cantidad: Int, nota: String) -> Unit,
     modifier: Modifier = Modifier,
+    descuentoPorcentaje: Double = 0.0,
+    precioFinal: Double = producto.precio,
     onAtras: () -> Unit = {}
 ) {
     var cantidad by remember(producto.id) { mutableIntStateOf(1) }
     var nota by remember(producto.id) { mutableStateOf("") }
 
     val agotado = !producto.disponible
-    val total = producto.precio * cantidad
+    val tieneDescuento = descuentoPorcentaje > 0.0 && !agotado
+    val total = precioFinal * cantidad
 
     Column(modifier = modifier.fillMaxSize()) {
 
@@ -104,10 +108,30 @@ fun DetalleProductoScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = soles(precioFinal),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (tieneDescuento) {
+                        Text(
+                            text = soles(producto.precio),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textDecoration = TextDecoration.LineThrough
+                        )
+                    }
+                }
+            }
+
+            // Chip de descuento
+            if (tieneDescuento) {
                 Text(
-                    text = soles(producto.precio),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    text = "Promocion: -${descuentoPorcentaje.toInt()}% en este producto",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 6.dp)
                 )
             }
 
@@ -195,11 +219,22 @@ fun DetalleProductoScreen(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = soles(total),
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = soles(total),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (tieneDescuento) {
+                            Text(
+                                text = "  " + soles(producto.precio * cantidad),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textDecoration = TextDecoration.LineThrough,
+                                modifier = Modifier.padding(bottom = 3.dp)
+                            )
+                        }
+                    }
                 }
             }
 

@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.data.local.entity.Producto
 
@@ -34,15 +35,21 @@ import com.huaman.cafecampus.data.local.entity.Producto
  *
  * Foto o icono, nombre, precio y boton circular de "+".
  * Un producto agotado se ve atenuado y su boton esta deshabilitado.
+ *
+ * Si hay una promocion vigente, se muestra el precio final en color del
+ * perfil y el precio de lista tachado al lado.
  */
 @Composable
 fun ProductoCard(
     producto: Producto,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAgregar: (() -> Unit)? = null
+    onAgregar: (() -> Unit)? = null,
+    descuentoPorcentaje: Double = 0.0,
+    precioFinal: Double = producto.precio
 ) {
     val atenuado = !producto.disponible
+    val tieneDescuento = descuentoPorcentaje > 0.0 && !atenuado
 
     Card(
         onClick = onClick,
@@ -78,6 +85,20 @@ fun ProductoCard(
                             )
                     )
                 }
+                // Etiqueta del descuento sobre la foto
+                if (tieneDescuento) {
+                    Text(
+                        text = "-${descuentoPorcentaje.toInt()}%",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
             }
 
             Text(
@@ -101,10 +122,18 @@ fun ProductoCard(
             ) {
                 Column {
                     Text(
-                        text = soles(producto.precio),
+                        text = soles(precioFinal),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    if (tieneDescuento) {
+                        Text(
+                            text = soles(producto.precio),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textDecoration = TextDecoration.LineThrough
+                        )
+                    }
                     if (atenuado) {
                         Text(
                             text = "Agotado",
