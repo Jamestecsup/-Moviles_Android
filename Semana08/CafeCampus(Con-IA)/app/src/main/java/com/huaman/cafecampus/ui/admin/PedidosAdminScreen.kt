@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
@@ -29,6 +31,7 @@ import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
 import com.huaman.cafecampus.model.EstadoPedido
 import com.huaman.cafecampus.ui.components.AppTopBar
 import com.huaman.cafecampus.ui.components.EstadoChip
+import com.huaman.cafecampus.ui.components.EstadoVacio
 import com.huaman.cafecampus.ui.components.PedidoCard
 import com.huaman.cafecampus.ui.components.soles
 import com.huaman.cafecampus.viewmodel.PedidosAdminViewModel
@@ -77,20 +80,12 @@ fun PedidosAdminScreen(
         }
 
         if (pedidos.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "No hay pedidos en ${estado.etiqueta.lowercase()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
+            EstadoVacio(
+                texto = "No hay pedidos en ${estado.etiqueta.lowercase()}",
+                subtitulo = "Los pedidos nuevos apareceran aqui apenas el estudiante confirme",
+                icono = Icons.AutoMirrored.Filled.ReceiptLong,
+                modifier = Modifier.fillMaxSize()
+            )
             return@Column
         }
 

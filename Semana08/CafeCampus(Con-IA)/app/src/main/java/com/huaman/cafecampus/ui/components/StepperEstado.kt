@@ -1,5 +1,9 @@
 package com.huaman.cafecampus.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +21,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.model.EstadoPedido
 
@@ -30,6 +37,9 @@ import com.huaman.cafecampus.model.EstadoPedido
  * La pantalla NO decide que paso esta completo: solo recibe el estado actual
  * y el componente dibuja. El estado llega por Flow desde Room, asi que cambia
  * solo cuando el administrador lo cambia, sin reiniciar la app.
+ *
+ * Cada paso se anima con AnimatedVisibility: cuando el estado avanza, el
+ * paso nuevo entra con un fundido y el check crece desde el centro.
  */
 @Composable
 fun StepperEstado(
@@ -84,16 +94,43 @@ private fun FilaStepper(
 ) {
     val activo = esActual || completado
 
-    Row(modifier = modifier.fillMaxWidth()) {
+    // Animacion: el paso activo entra con fade + una leve escala.
+    val animacion = remember { Animatable(0f) }
+    LaunchedEffect(activo) {
+        animacion.animateTo(
+            targetValue = if (activo) 1f else 0.6f,
+            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+        )
+    }
 
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer { alpha = animacion.value },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         // Columna del marcador y la linea vertical
         Column(
             modifier = Modifier.width(34.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // El check crece desde el centro al completarse el paso.
+            val escala = remember { Animatable(0f) }
+            LaunchedEffect(completado) {
+                escala.animateTo(
+                    targetValue = if (completado) 1f else 0f,
+                    animationSpec = spring(dampingRatio = 0.5f, stiffness = 800f)
+                )
+            }
+
             CirculoEstado(
                 lleno = activo,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier
+                    .size(26.dp)
+                    .graphicsLayer {
+                        scaleX = 1f + escala.value * 0.15f
+                        scaleY = 1f + escala.value * 0.15f
+                    }
             ) {
                 if (activo) {
                     Icon(

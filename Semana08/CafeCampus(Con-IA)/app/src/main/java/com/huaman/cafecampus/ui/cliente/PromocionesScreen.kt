@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -39,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.huaman.cafecampus.data.local.entity.Promocion
 import com.huaman.cafecampus.ui.components.AppTopBar
 import com.huaman.cafecampus.ui.components.EstadoChip
+import com.huaman.cafecampus.ui.components.EstadoVacio
 import com.huaman.cafecampus.viewmodel.PromocionesViewModel
 
 /**
@@ -92,10 +94,15 @@ fun PromocionesScreen(
 
                 if (todas.isEmpty()) {
                     item {
-                        Text(
-                            text = "No hay promociones.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        EstadoVacio(
+                            texto = "No hay promociones",
+                            subtitulo = if (esAdmin) {
+                                "Crea una con el boton + para ubicar un producto o una categoria"
+                            } else {
+                                "Cuando la cafeteria ofrezca ofertas, apareceran aqui"
+                            },
+                            icono = Icons.Filled.LocalOffer,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }

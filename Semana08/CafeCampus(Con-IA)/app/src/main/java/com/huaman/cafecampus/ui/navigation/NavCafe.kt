@@ -340,6 +340,12 @@ fun NavCafe(
                     onRepetir = { pedido ->
                         pedidosCliente.repetirPedido(pedido)
                     },
+                    onIrAlMenu = {
+                        navController.navigate(Rutas.MENU) {
+                            popUpTo(Rutas.MENU) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                     onAtras = { navController.popBackStack() }
                 )
             }
