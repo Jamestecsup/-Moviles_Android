@@ -82,16 +82,21 @@ fun AppTopBar(
 
 /**
  * Icono de notificacion con contador, tal como aparece en el menu del cliente.
+ *
+ * Antes era un boton que no hacia nada: ahora [onClick] es obligatorio y
+ * cada pantalla decide a donde lleva (el cliente, a sus pedidos; el
+ * administrador, a la bandeja de pedidos).
  */
 @Composable
 fun IconoContador(
     cantidad: Int,
     modifier: Modifier = Modifier,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    descripcion: String
+    descripcion: String,
+    onClick: () -> Unit
 ) {
     Box(modifier = modifier) {
-        IconButton(onClick = { }) {
+        IconButton(onClick = onClick) {
             Icon(imageVector = icon, contentDescription = descripcion)
         }
         if (cantidad > 0) {

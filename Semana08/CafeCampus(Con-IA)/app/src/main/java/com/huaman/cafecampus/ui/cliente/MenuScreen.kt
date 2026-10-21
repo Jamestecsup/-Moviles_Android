@@ -58,7 +58,8 @@ fun MenuScreen(
     totalCarrito: Double = 0.0,
     totalCarritoOriginal: Double = 0.0,
     nombreUsuario: String? = null,
-    onCarrito: () -> Unit = {}
+    onCarrito: () -> Unit = {},
+    onNotificaciones: () -> Unit = {}
 ) {
     val productos by vm.productos.collectAsStateWithLifecycle()
     val visibles by vm.productosVisibles.collectAsStateWithLifecycle()
@@ -100,7 +101,8 @@ fun MenuScreen(
             IconoContador(
                 cantidad = 0,
                 icon = Icons.Filled.Notifications,
-                descripcion = "Notificaciones"
+                descripcion = "Mis pedidos",
+                onClick = onNotificaciones
             )
         }
 

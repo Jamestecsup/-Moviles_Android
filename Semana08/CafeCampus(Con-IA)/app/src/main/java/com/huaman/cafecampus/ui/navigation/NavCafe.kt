@@ -251,11 +251,15 @@ fun NavCafe(
                     totalCarritoOriginal = totalOriginal,
                     nombreUsuario = usuario?.nombre,
                     onCarrito = { navController.navigate(Rutas.CONFIRMAR_PEDIDO) },
+                    onNotificaciones = {
+                        navController.navigate(Rutas.MIS_PEDIDOS) {
+                            launchSingleTop = true
+                        }
+                    },
                     onProducto = { id ->
                         navController.navigate(Rutas.detalleProducto(id))
                     }
-                )
-            }
+                )            }
 
             composable(
                 route = Rutas.DETALLE_PRODUCTO,
@@ -380,14 +384,16 @@ fun NavCafe(
                     vm = factory.panelAdmin,
                     onVerTodos = { navController.navigate(Rutas.PEDIDOS_ADMIN) },
                     onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) },
-                    onVerReporte = { navController.navigate(Rutas.REPORTE) }
+                    onVerReporte = { navController.navigate(Rutas.REPORTE) },
+                    onVerPedidos = { navController.navigate(Rutas.PEDIDOS_ADMIN) }
                 )
             }
 
             composable(Rutas.PEDIDOS_ADMIN) {
                 PedidosAdminScreen(
                     vm = factory.pedidosAdmin,
-                    onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) }
+                    onPedido = { id -> navController.navigate(Rutas.detallePedidoAdmin(id)) },
+                    onAtras = { navController.popBackStack() }
                 )
             }
 
@@ -454,6 +460,7 @@ fun NavCafe(
                 PromocionesScreen(
                     vm = factory.promociones,
                     esAdmin = rol == Rol.ADMIN,
+                    onAtras = { navController.popBackStack() },
                     onNueva = { navController.navigate(Rutas.formularioPromocion()) },
                     onEditar = { id -> navController.navigate(Rutas.formularioPromocion(id)) }
                 )
@@ -508,6 +515,7 @@ fun NavCafe(
                     modoOscuro = modoOscuro,
                     notificaciones = notificaciones,
                     recibePedidos = recibePedidos,
+                    onAtras = { navController.popBackStack() },
                     onModoOscuro = sesion::guardarModoOscuro,
                     onNotificaciones = sesion::guardarNotificaciones,
                     onRecibePedidos = sesion::guardarRecibirPedidos,

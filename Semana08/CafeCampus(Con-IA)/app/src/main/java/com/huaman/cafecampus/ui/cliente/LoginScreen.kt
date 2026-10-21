@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -68,6 +70,7 @@ fun LoginScreen(
 
     var correo by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
+    var mensajeOlvido by remember { mutableStateOf(false) }
 
     val esAdmin = rol == Rol.ADMIN
 
@@ -148,7 +151,7 @@ fun LoginScreen(
         )
 
         TextButton(
-            onClick = { },
+            onClick = { mensajeOlvido = true },
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(top = 2.dp)
@@ -158,6 +161,27 @@ fun LoginScreen(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary
             )
+        }
+
+        // Aviso: en esta demo no se envia correo, asi que se explica
+        // cuantas cuentas hay de prueba.
+        if (mensajeOlvido) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Text(
+                    text = "Demo sin correo: usa juan@campus.test / 1234 o admin@cafe.test / admin.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
         }
 
         // Boton del color del rol

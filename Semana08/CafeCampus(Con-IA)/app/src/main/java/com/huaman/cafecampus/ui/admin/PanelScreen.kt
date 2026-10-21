@@ -57,6 +57,7 @@ fun PanelScreen(
     onPedido: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onVerReporte: () -> Unit = {},
+    onVerPedidos: () -> Unit = {},
     onPreparar: (PedidoConDetalle) -> Unit = { vm.preparar(it) }
 ) {
     val nuevos by vm.nuevos.collectAsStateWithLifecycle()
@@ -75,7 +76,8 @@ fun PanelScreen(
                 IconoContador(
                     cantidad = nuevos,
                     icon = Icons.Filled.Notifications,
-                    descripcion = "Pedidos nuevos"
+                    descripcion = "Pedidos nuevos",
+                    onClick = onVerPedidos
                 )
             }
         )
