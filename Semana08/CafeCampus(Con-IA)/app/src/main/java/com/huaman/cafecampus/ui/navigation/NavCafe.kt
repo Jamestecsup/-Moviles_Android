@@ -337,12 +337,19 @@ fun NavCafe(
                 MisPedidosScreen(
                     activos = activos,
                     historicos = historicos,
+                    mensaje = mensaje,
                     onPedido = { id -> navController.navigate(Rutas.seguimiento(id)) },
                     onRepetir = { pedido ->
                         pedidosCliente.repetirPedido(pedido)
                     },
                     onIrAlMenu = {
                         navController.navigate(Rutas.MENU) {
+                            popUpTo(Rutas.MENU) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onIrAlCarrito = {
+                        navController.navigate(Rutas.CONFIRMAR_PEDIDO) {
                             popUpTo(Rutas.MENU) { inclusive = true }
                             launchSingleTop = true
                         }

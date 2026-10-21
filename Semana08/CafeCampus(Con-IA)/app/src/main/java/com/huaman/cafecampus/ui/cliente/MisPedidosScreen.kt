@@ -1,9 +1,12 @@
 ﻿package com.huaman.cafecampus.ui.cliente
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
@@ -13,10 +16,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -59,8 +65,10 @@ fun MisPedidosScreen(
     historicos: List<PedidoConDetalle>,
     onPedido: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    mensaje: String? = null,
     onRepetir: (PedidoConDetalle) -> Unit = {},
     onIrAlMenu: () -> Unit = {},
+    onIrAlCarrito: () -> Unit = {},
     onAtras: () -> Unit = {}
 ) {
     var pestañaActiva by remember { mutableStateOf(0) } // 0 = Activos, 1 = Historial
@@ -75,6 +83,40 @@ fun MisPedidosScreen(
             onSeleccion = { pestañaActiva = it },
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
+        // Aviso: al repetir un pedido, el ViewModel dice cuantos productos
+        // se agregaron (o por que no se pudo).
+        AnimatedVisibility(
+            visible = mensaje != null,
+            enter = fadeIn(animationSpec = tween(200)) + expandVertically(),
+            exit = fadeOut(animationSpec = tween(160)) + shrinkVertically()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ShoppingBag,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "  " + (mensaje ?: ""),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = onIrAlCarrito) {
+                    Text("Ver carrito", style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        }
 
         // Transicion animada entre las pestanas: la lista nueva entra con un
         // fade corto y un deslizamiento lateral.
@@ -178,8 +220,9 @@ private fun TarjetaPedidoConAcciones(
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "  Repetir pedido",
+                    text = "Repetir pedido",
                     style = MaterialTheme.typography.labelMedium
                 )
             }
