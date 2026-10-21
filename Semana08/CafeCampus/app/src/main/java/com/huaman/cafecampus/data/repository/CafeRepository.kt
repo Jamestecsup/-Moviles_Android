@@ -107,6 +107,12 @@ interface CafeRepository {
     /** Lectura que actualiza la pantalla -> Flow (sin `suspend`). */
     fun observarPromociones(): Flow<List<Promocion>>
 
+    /** Todas las promociones, activas y deshabilitadas (las ve el admin). */
+    fun observarTodasPromociones(): Flow<List<Promocion>>
+
+    /** Una promocion puntual, para abrirla en el formulario de edicion. */
+    suspend fun promocionPorId(id: Int): Promocion?
+
     /** Inserta si es nuevo (id == 0) o actualiza si ya existe. */
     suspend fun guardarPromocion(p: Promocion): Unit
 
@@ -115,4 +121,7 @@ interface CafeRepository {
 
     /** Desactiva una promocion (pone activo = false). */
     suspend fun desactivarPromocion(id: Int)
+
+    /** Vuelve a habilitar una promocion. */
+    suspend fun activarPromocion(id: Int)
 }

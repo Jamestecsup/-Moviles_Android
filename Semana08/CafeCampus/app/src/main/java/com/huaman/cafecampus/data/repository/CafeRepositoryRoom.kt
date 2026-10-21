@@ -147,7 +147,13 @@ class CafeRepositoryRoom(
     // -----------------------------------------------------------------------
 
     override fun observarPromociones(): Flow<List<Promocion>> =
-        promocionDao.observarTodos()
+        promocionDao.observarActivas()
+
+    override fun observarTodasPromociones(): Flow<List<Promocion>> =
+        promocionDao.observarTodas()
+
+    override suspend fun promocionPorId(id: Int): Promocion? =
+        promocionDao.porId(id)
 
     override suspend fun guardarPromocion(p: Promocion): Unit {
         promocionDao.insertar(p)
@@ -158,4 +164,7 @@ class CafeRepositoryRoom(
 
     override suspend fun desactivarPromocion(id: Int) =
         promocionDao.desactivar(id)
+
+    override suspend fun activarPromocion(id: Int) =
+        promocionDao.activar(id)
 }

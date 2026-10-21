@@ -122,6 +122,7 @@ fun NavCafe(
         Rutas.CONFIRMAR_PEDIDO,
         Rutas.SEGUIMIENTO,
         Rutas.FORMULARIO_PRODUCTO,
+        Rutas.FORMULARIO_PROMOCION,
         Rutas.DETALLE_PEDIDO_ADMIN
     )
 
@@ -399,16 +400,38 @@ fun NavCafe(
             composable(Rutas.PROMOCIONES) {
                 PromocionesScreen(
                     vm = factory.promociones,
-                    rol = rol.name,
-                    onEditar = { id ->
-                        navController.navigate(Rutas.formularioProducto(id)) // placeholder: reusa formulario de producto
-                    },
-                    onEliminar = { id ->
-                        // TODO: eliminar promocion por id
-                    },
-                    onNuevo = {
-                        // navegar a formulario de nueva promocion
+                    esAdmin = rol == Rol.ADMIN,
+                    onNueva = { navController.navigate(Rutas.formularioPromocion()) },
+                    onEditar = { id -> navController.navigate(Rutas.formularioPromocion(id)) }
+                )
+            }
+
+            composable(
+                route = Rutas.FORMULARIO_PROMOCION,
+                arguments = listOf(
+                    navArgument(Rutas.ARG_PROMOCION_ID) {
+                        type = NavType.IntType
+                        defaultValue = 0
                     }
+                )
+            ) { entry ->
+                val id = entry.arguments?.getInt(Rutas.ARG_PROMOCION_ID) ?: 0
+                val vm = factory.promociones
+
+                val todas by vm.todas.collectAsStateWithLifecycle()
+                val error by vm.error.collectAsStateWithLifecycle()
+
+                FormularioPromocionScreen(
+                    promocion = todas.firstOrNull { it.id == id },
+                    error = error,
+                    onGuardar = { idForm, tipo, valor, desc, fechaFin ->
+                        vm.guardar(idForm, tipo, valor, desc, fechaFin) {
+                            navController.popBackStack()
+                        }
+                    },
+                    onCancelar = { navController.popBackStack() },
+                    onAtras = { navController.popBackStack() },
+                    onLimpiarError = vm::limpiarError
                 )
             }
 

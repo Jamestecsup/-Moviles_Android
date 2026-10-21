@@ -25,6 +25,7 @@ object Rutas {
     const val MIS_PEDIDOS = "misPedidos"
     const val PERFIL = "perfil"
     const val PROMOCIONES = "promociones"
+    const val FORMULARIO_PROMOCION = "formularioPromocion?promocionId={promocionId}"
 
     // -----------------------------------------------------------------------
     // Administrador (4 items: Panel, Pedidos, Menu, Ajustes)
@@ -54,4 +55,11 @@ object Rutas {
     const val ARG_PEDIDO_ID = "pedidoId"
 
     fun promociones() = "promociones"
+
+    /** `promocionId` vacio = crear una nueva; con id = editar. */
+    fun formularioPromocion(promocionId: Int? = null) =
+        if (promocionId == null) "formularioPromocion?promocionId=0"
+        else "formularioPromocion?promocionId=$promocionId"
+
+    const val ARG_PROMOCION_ID = "promocionId"
 }
