@@ -309,10 +309,14 @@ fun NavCafe(
             composable(Rutas.MIS_PEDIDOS) {
                 val activos by pedidosCliente.pedidosActivos.collectAsStateWithLifecycle()
                 val historicos by pedidosCliente.pedidosHistoricos.collectAsStateWithLifecycle()
+                val mensaje by pedidosCliente.mensaje.collectAsStateWithLifecycle()
                 MisPedidosScreen(
                     activos = activos,
                     historicos = historicos,
                     onPedido = { id -> navController.navigate(Rutas.seguimiento(id)) },
+                    onRepetir = { pedido ->
+                        pedidosCliente.repetirPedido(pedido)
+                    },
                     onAtras = { navController.popBackStack() }
                 )
             }

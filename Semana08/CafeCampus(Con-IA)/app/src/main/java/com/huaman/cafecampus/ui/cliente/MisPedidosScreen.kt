@@ -15,8 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.data.local.relation.PedidoConDetalle
+import com.huaman.cafecampus.model.EstadoPedido
 import com.huaman.cafecampus.ui.components.AppTopBar
 import com.huaman.cafecampus.ui.components.PedidoCard
 
@@ -48,6 +51,7 @@ fun MisPedidosScreen(
     historicos: List<PedidoConDetalle>,
     onPedido: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onRepetir: (PedidoConDetalle) -> Unit = {},
     onAtras: () -> Unit = {}
 ) {
     var pestañaActiva by remember { mutableStateOf(0) } // 0 = Activos, 1 = Historial
@@ -101,15 +105,57 @@ fun MisPedidosScreen(
         ) {
             items(count = lista.size, key = { lista[it].pedido.id }) { indice ->
                 val pedido = lista[indice]
-                PedidoCard(
-                    numero = pedido.pedido.id,
-                    resumen = pedido.resumen,
-                    horaRecojo = pedido.pedido.horaRecojo,
-                    total = pedido.pedido.total,
-                    estado = pedido.pedido.estadoTipado,
-                    pago = FormaPago.desde(pedido.pedido.pago).etiqueta,
-                    nota = pedido.pedido.nota.ifBlank { null },
-                    onClick = { onPedido(pedido.pedido.id) }
+                TarjetaPedidoConAcciones(
+                    pedido = pedido,
+                    onPedido = { onPedido(pedido.pedido.id) },
+                    onRepetir = { onRepetir(pedido) }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Tarjeta de un pedido con su boton de "Repetir".
+ *
+ * Repetir vuelve a cargar los productos del pedido al carrito, ya con los
+ * precios y las promociones de HOY.
+ */
+@Composable
+private fun TarjetaPedidoConAcciones(
+    pedido: PedidoConDetalle,
+    onPedido: () -> Unit,
+    onRepetir: () -> Unit
+) {
+    Column {
+        PedidoCard(
+            numero = pedido.pedido.id,
+            resumen = pedido.resumen,
+            horaRecojo = pedido.pedido.horaRecojo,
+            total = pedido.pedido.total,
+            estado = pedido.pedido.estadoTipado,
+            pago = FormaPago.desde(pedido.pedido.pago).etiqueta,
+            nota = pedido.pedido.nota.ifBlank { null },
+            onClick = onPedido
+        )
+
+        // Un pedido cancelado no se puede repetir.
+        if (pedido.pedido.estadoTipado != EstadoPedido.CANCELADO) {
+            OutlinedButton(
+                onClick = onRepetir,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "  Repetir pedido",
+                    style = MaterialTheme.typography.labelMedium
                 )
             }
         }

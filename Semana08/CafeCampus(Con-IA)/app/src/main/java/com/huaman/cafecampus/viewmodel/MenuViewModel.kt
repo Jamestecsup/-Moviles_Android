@@ -176,6 +176,34 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
         _carrito.value = emptyList()
     }
 
+    /**
+     * Busca un producto del catalogo actual por su nombre.
+     * Se usa para "repetir pedido": el pedido guardado tiene el nombre del
+     * producto (una foto del momento), y lo buscamos en la carta vigente.
+     */
+    fun productoPorNombre(nombre: String): Producto? =
+        productos.value.firstOrNull { it.nombre.equals(nombre.trim(), ignoreCase = true) }
+
+    /**
+     * Agrega varias lineas al carrito de una vez.
+     *
+     * Cada linea recalcula el precio con la promocion vigente, asi que al
+     * repetir un pedido se cobra lo que vale HOY, no lo que valia entonces.
+     */
+    fun agregarVarios(items: List<ItemCarrito>) {
+        val promos = promociones.value
+        items.forEach { item ->
+            val oferta = CalculoPromociones.ofertaDe(item.producto, promos)
+            agregar(
+                producto = item.producto,
+                cantidad = item.cantidad,
+                nota = item.nota,
+                precioUnitario = oferta.precioFinal,
+                descuentoPorcentaje = oferta.descuentoPorcentaje
+            )
+        }
+    }
+
     /** Total del carrito. */
     fun total(): Double = _carrito.value.sumOf { it.subtotal }
 

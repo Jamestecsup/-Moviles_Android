@@ -144,4 +144,37 @@ class PedidosClienteViewModel(
     fun limpiarMensaje() {
         _mensaje.value = null
     }
+
+    /**
+     * Repite un pedido anterior: vuelve a cargar sus productos al carrito.
+     *
+     * Los pedidos guardan el NOMBRE del producto (una foto del momento), asi
+     * que se busca cada linea en la carta vigente. Si el producto ya no
+     * existe o esta agotado, se avisa y no se agrega.
+     *
+     * @return la cantidad de productos que si se pudieron agregar.
+     */
+    fun repetirPedido(pedido: PedidoConDetalle): Int {
+        val lineas = pedido.detalles.mapNotNull { linea ->
+            val producto = menu.productoPorNombre(linea.nombreProducto)
+            if (producto != null && producto.disponible) {
+                ItemCarrito(
+                    producto = producto,
+                    cantidad = linea.cantidad,
+                    nota = ""
+                )
+            } else {
+                null
+            }
+        }
+
+        if (lineas.isEmpty()) {
+            _mensaje.value = "Los productos de ese pedido ya no estan disponibles"
+            return 0
+        }
+
+        menu.agregarVarios(lineas)
+        _mensaje.value = "Se agregaron ${lineas.size} producto(s) al carrito"
+        return lineas.size
+    }
 }
