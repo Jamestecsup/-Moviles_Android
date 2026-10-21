@@ -1,0 +1,29 @@
+# ============================================================
+#  .-Moviles_Android
+#  Ignora la configuracion local de cada maquina y los
+#  artefactos de build, para que el repo se pueda clonar y
+#  compilar en cualquier equipo sin arrastrar basura.
+# ============================================================
+
+# --- Configuracion del IDE ---
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# --- Artefactos de Gradle ---
+.gradle/
+build/
+.kotlin/
+
+# --- Rutas locales ---
+# local.properties guarda la ruta del SDK: se genera solo al
+# abrir el proyecto en Android Studio, no debe versionarse.
+local.properties
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+
+# --- Copia local sin versionar ---
+Semana06/Mibodega(Con-IA)/
