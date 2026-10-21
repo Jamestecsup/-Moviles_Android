@@ -2,7 +2,9 @@ package com.huaman.cafecampus.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.huaman.cafecampus.data.local.Categoria
 import com.huaman.cafecampus.data.local.entity.Promocion
+import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.data.repository.CafeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,6 +24,20 @@ class PromocionesViewModel(private val repo: CafeRepository) : ViewModel() {
     val activas: StateFlow<List<Promocion>> =
         repo.observarPromociones()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /**
+     * Productos de la carta, Straight desde el Flow de Room.
+     *
+     * Por eso el selector del formulario se actualiza SOLO: si el
+     * administrador crea un producto nuevo en "Menu", aparece aqui sin
+     * tocar nada.
+     */
+    val productos: StateFlow<List<Producto>> =
+        repo.observarProductos()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Categorias disponibles para una promocion de categoria entera. */
+    val categorias: List<String> = Categoria.paraFormulario
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()

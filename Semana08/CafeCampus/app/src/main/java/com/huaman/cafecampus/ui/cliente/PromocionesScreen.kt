@@ -245,12 +245,13 @@ private fun TarjetaPromocion(
                 )
             }
 
-            // Acciones del administrador
+            // Acciones del administrador: solo iconos, con su descripcion
+            // (para TalkBack). El texto al lado era redundante.
             if (esAdmin) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 10.dp),
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -285,13 +286,6 @@ private fun TarjetaPromocion(
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
-
-                    Text(
-                        text = if (promocion.activo) "Deshabilitar" else "Habilitar",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
                 }
             }
         }

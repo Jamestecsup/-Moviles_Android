@@ -419,10 +419,13 @@ fun NavCafe(
                 val vm = factory.promociones
 
                 val todas by vm.todas.collectAsStateWithLifecycle()
+                val productos by vm.productos.collectAsStateWithLifecycle()
                 val error by vm.error.collectAsStateWithLifecycle()
 
                 FormularioPromocionScreen(
                     promocion = todas.firstOrNull { it.id == id },
+                    productos = productos,
+                    categorias = vm.categorias,
                     error = error,
                     onGuardar = { idForm, tipo, valor, desc, fechaFin ->
                         vm.guardar(idForm, tipo, valor, desc, fechaFin) {

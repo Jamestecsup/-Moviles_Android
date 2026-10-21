@@ -1,12 +1,18 @@
-package com.huaman.cafecampus.ui.admin
+﻿package com.huaman.cafecampus.ui.admin
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.huaman.cafecampus.data.local.entity.Promocion
+import com.huaman.cafecampus.data.local.entity.Producto
 import com.huaman.cafecampus.ui.components.AppTopBar
 import com.huaman.cafecampus.ui.components.CafeButton
 import com.huaman.cafecampus.ui.components.CafeButtonSecundario
@@ -24,12 +31,19 @@ import com.huaman.cafecampus.ui.components.CafeTextField
 /**
  * Crear / editar una promocion.
  *
+ * El TIPO y el PRODUCTO/CATEGORIA son desplegables: no se escriben a mano.
+ * La lista de productos viene del Flow de Room, asi que se actualiza sola
+ * cuando el administrador agrega un producto nuevo en "Menu".
+ *
  * Si [promocion] viene con datos, se edita esa; si viene null, se crea una
  * nueva. [onGuardar] recibe el id (0 = nueva) y los datos del formulario.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioPromocionScreen(
     promocion: Promocion?,
+    productos: List<Producto>,
+    categorias: List<String>,
     error: String?,
     onGuardar: (
         id: Int,
@@ -59,6 +73,16 @@ fun FormularioPromocionScreen(
         mutableStateOf(promocion?.let { calcularDiasRestantes(it.fechaFin) } ?: 7)
     }
 
+    var menuTipoAbierto by remember { mutableStateOf(false) }
+    var menuValorAbierto by remember { mutableStateOf(false) }
+
+    // Las opciones dependen del tipo elegido.
+    val opcionesValor: List<String> = if (tipo == "CATEGORIA") {
+        categorias
+    } else {
+        productos.map { it.nombre }
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
         AppTopBar(
             titulo = if (promocion == null) "Nueva promocion" else "Editar promocion",
@@ -72,22 +96,118 @@ fun FormularioPromocionScreen(
                 .padding(horizontal = 16.dp)
         ) {
 
-            CafeTextField(
-                valor = tipo,
-                onValorChange = { tipo = it; onLimpiarError() },
-                etiqueta = "Tipo (PRODUCTO / CATEGORIA)",
-                marcador = "Ej: PRODUCTO o CATEGORIA",
-                modifier = Modifier.padding(top = 16.dp)
-            )
+            // ------------------------------------------------ TIPO
+            ExposedDropdownMenuBox(
+                expanded = menuTipoAbierto,
+                onExpandedChange = { menuTipoAbierto = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                OutlinedTextField(
+                    value = if (tipo == "CATEGORIA") "Categoria" else "Producto",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tipo de promocion") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuTipoAbierto)
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = menuTipoAbierto,
+                    onDismissRequest = { menuTipoAbierto = false }
+                ) {
+                    listOf("PRODUCTO" to "Producto", "CATEGORIA" to "Categoria").forEach { (valor, texto) ->
+                        DropdownMenuItem(
+                            text = { Text(texto) },
+                            onClick = {
+                                tipo = valor
+                                valorReferencia = ""   // la lista de opciones cambio
+                                menuTipoAbierto = false
+                            }
+                        )
+                    }
+                }
+            }
 
-            CafeTextField(
-                valor = valorReferencia,
-                onValorChange = { valorReferencia = it; onLimpiarError() },
-                etiqueta = "Producto o Categoria",
-                marcador = "Ej: Cafe americano o Bebidas",
-                modifier = Modifier.padding(top = 12.dp)
-            )
+            // ------------------------------------------------ PRODUCTO O CATEGORIA
+            ExposedDropdownMenuBox(
+                expanded = menuValorAbierto,
+                onExpandedChange = { menuValorAbierto = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+            ) {
+                OutlinedTextField(
+                    value = valorReferencia,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = {
+                        // Etiquetas distintas a las del desplegable de arriba,
+                        // para no confusing "Producto" con "Producto".
+                        Text(if (tipo == "CATEGORIA") "Categoria a ofertar" else "Producto a ofertar")
+                    },
+                    placeholder = {
+                        Text(
+                            if (opcionesValor.isEmpty()) {
+                                "No hay nada para elegir"
+                            } else {
+                                "Toca para elegir"
+                            }
+                        )
+                    },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuValorAbierto)
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = menuValorAbierto,
+                    onDismissRequest = { menuValorAbierto = false }
+                ) {
+                    if (opcionesValor.isEmpty()) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = if (tipo == "CATEGORIA") {
+                                        "No hay categorias"
+                                    } else {
+                                        "No hay productos en la carta"
+                                    }
+                                )
+                            },
+                            onClick = { menuValorAbierto = false }
+                        )
+                    } else {
+                        opcionesValor.forEach { opcion ->
+                            DropdownMenuItem(
+                                text = { Text(opcion) },
+                                onClick = {
+                                    valorReferencia = opcion
+                                    menuValorAbierto = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
+            // ------------------------------------------------ DESCUENTO
             CafeTextField(
                 valor = descuento,
                 onValorChange = { descuento = it; onLimpiarError() },
@@ -98,6 +218,7 @@ fun FormularioPromocionScreen(
                 modifier = Modifier.padding(top = 12.dp)
             )
 
+            // ------------------------------------------------ VIGENCIA
             CafeTextField(
                 valor = dias.toString(),
                 onValorChange = { texto ->
