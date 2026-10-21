@@ -51,6 +51,7 @@ import com.huaman.cafecampus.ui.cliente.MisPedidosScreen
 import com.huaman.cafecampus.ui.cliente.MenuScreen
 import com.huaman.cafecampus.ui.cliente.PerfilScreen
 import com.huaman.cafecampus.ui.cliente.PromocionesScreen
+import com.huaman.cafecampus.ui.cliente.RegistroScreen
 import com.huaman.cafecampus.ui.cliente.SeguimientoScreen
 import com.huaman.cafecampus.ui.cliente.SplashScreen
 import com.huaman.cafecampus.viewmodel.CafeViewModelFactory
@@ -208,7 +209,28 @@ fun NavCafe(
                             popUpTo(0) { inclusive = true }
                             launchSingleTop = true
                         }
+                    },
+                    onIrAlRegistro = {
+                        navController.navigate(Rutas.REGISTRO) {
+                            launchSingleTop = true
+                        }
                     }
+                )
+            }
+
+            composable(Rutas.REGISTRO) {
+                RegistroScreen(
+                    vm = sesion,
+                    onRegistrado = { nuevo ->
+                        // La cuenta ya esta creada: se inicia sesion y se
+                        // entra directo al menu del estudiante.
+                        sesion.ingresarCon(nuevo)
+                        navController.navigate(pantallaPrincipalDeRol(Rol.CLIENTE)) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onVolverAlLogin = { navController.popBackStack() }
                 )
             }
 

@@ -35,6 +35,20 @@ interface UsuarioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(u: Usuario): Long
 
+    /**
+     * Registra un usuario NUEVO sin reemplazar el existente.
+     *
+     * IGNORE hace que el INSERT no haga nada si el correo ya existe (el
+     * indice UNIQUE de `usuarios.correo` lo rechaza). Por eso el DAO
+     * devuelve el id generado, que es -1 cuando NO se pudo insertar.
+     */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun registrar(u: Usuario): Long
+
+    /** El correo ya esta en uso? Sirve para validar antes de insertar. */
+    @Query("SELECT COUNT(*) FROM usuarios WHERE correo = :correo")
+    suspend fun existeCorreo(correo: String): Int
+
     @Query("SELECT COUNT(*) FROM usuarios")
     suspend fun contar(): Int
 }

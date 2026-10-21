@@ -39,6 +39,17 @@ interface CafeRepository {
      */
     suspend fun usuarioDelRol(rol: Rol): Usuario?
 
+    /**
+     * Registra un estudiante nuevo.
+     *
+     * El correo es UNIQUE en la tabla, asi que si ya existe el registro se
+     * rechaza y se devuelve null. El ViewModel valida antes de llamar, pero
+     * la base es la que garantiza que no haya correos repetidos.
+     *
+     * @return el Usuario creado, o null si el correo ya estaba en uso.
+     */
+    suspend fun registrarEstudiante(nombre: String, correo: String, clave: String): Usuario?
+
     // -----------------------------------------------------------------------
     // Productos
     // -----------------------------------------------------------------------

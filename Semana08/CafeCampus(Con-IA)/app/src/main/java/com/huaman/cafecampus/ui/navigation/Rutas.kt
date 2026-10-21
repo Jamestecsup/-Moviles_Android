@@ -14,6 +14,7 @@ object Rutas {
     // -----------------------------------------------------------------------
     const val SPLASH = "splash"
     const val LOGIN = "login"
+    const val REGISTRO = "registro"
 
     // -----------------------------------------------------------------------
     // Cliente (3 items en la barra inferior: Menu, Pedidos, Perfil)

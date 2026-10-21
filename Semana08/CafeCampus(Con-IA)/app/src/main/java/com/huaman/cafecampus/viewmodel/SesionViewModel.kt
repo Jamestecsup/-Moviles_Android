@@ -163,4 +163,76 @@ class SesionViewModel(
     fun limpiarError() {
         _error.value = null
     }
+
+    /**
+     * Inicia sesion con un usuario ya creado (por ejemplo, recien registrado).
+     * Guarda el perfil en DataStore igual que el login normal.
+     */
+    fun ingresarCon(usuario: Usuario) {
+        _usuarioActual.value = usuario
+        _rolSeleccionado.value = usuario.rolTipado
+        viewModelScope.launch { prefs.guardarPerfil(usuario.rolTipado) }
+    }
+
+    // -----------------------------------------------------------------------
+    // Registro de estudiante
+    // -----------------------------------------------------------------------
+
+    private val _registroError = MutableStateFlow<String?>(null)
+    val registroError: StateFlow<String?> = _registroError.asStateFlow()
+
+    private val _registrado = MutableStateFlow(false)
+    val registrado: StateFlow<Boolean> = _registrado.asStateFlow()
+
+    /**
+     * Crea una cuenta de estudiante nueva.
+     *
+     * Validaciones:
+     *  - el nombre es obligatorio,
+     *  - el correo tiene formato valido y es UNIQUE,
+     *  - la clave tiene al menos 4 caracteres,
+     *  - la clave se confirma.
+     */
+    fun registrar(
+        nombre: String,
+        correo: String,
+        clave: String,
+        claveConfirmada: String,
+        alRegistrar: (Usuario) -> Unit
+    ) {
+        viewModelScope.launch {
+            _registroError.value = null
+
+            if (nombre.isBlank()) {
+                _registroError.value = "El nombre es obligatorio"
+                return@launch
+            }
+            if (!Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$").matches(correo.trim())) {
+                _registroError.value = "El correo no es valido"
+                return@launch
+            }
+            if (clave.length < 4) {
+                _registroError.value = "La clave debe tener al menos 4 caracteres"
+                return@launch
+            }
+            if (clave != claveConfirmada) {
+                _registroError.value = "Las claves no coinciden"
+                return@launch
+            }
+
+            val nuevo = repo.registrarEstudiante(nombre, correo, clave)
+            if (nuevo == null) {
+                // La base rechazo el INSERT: el correo ya existe.
+                _registroError.value = "Ese correo ya esta registrado"
+                return@launch
+            }
+
+            _registrado.value = true
+            alRegistrar(nuevo)
+        }
+    }
+
+    fun limpiarRegistroError() {
+        _registroError.value = null
+    }
 }

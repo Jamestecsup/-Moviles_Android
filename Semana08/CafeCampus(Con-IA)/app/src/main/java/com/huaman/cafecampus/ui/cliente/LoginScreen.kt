@@ -51,7 +51,8 @@ import com.huaman.cafecampus.viewmodel.SesionViewModel
 fun LoginScreen(
     vm: SesionViewModel,
     modifier: Modifier = Modifier,
-    onIngresoExitoso: (Rol) -> Unit = {}
+    onIngresoExitoso: (Rol) -> Unit = {},
+    onIrAlRegistro: () -> Unit = {}
 ) {
     val rol by vm.rolSeleccionado.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
@@ -168,7 +169,7 @@ fun LoginScreen(
         )
 
         TextButton(
-            onClick = { },
+            onClick = onIrAlRegistro,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp)

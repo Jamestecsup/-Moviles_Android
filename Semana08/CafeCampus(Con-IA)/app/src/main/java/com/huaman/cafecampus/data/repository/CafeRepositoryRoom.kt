@@ -50,6 +50,25 @@ class CafeRepositoryRoom(
     override suspend fun usuarioDelRol(rol: Rol): Usuario? =
         usuarioDao.porRol(rol.name)
 
+    /**
+     * Registra un estudiante nuevo. Si el correo ya existe, el INSERT con
+     * OnConflictStrategy.IGNORE no hace nada y devuelve -1.
+     */
+    override suspend fun registrarEstudiante(
+        nombre: String,
+        correo: String,
+        clave: String
+    ): Usuario? {
+        val nuevo = Usuario(
+            nombre = nombre.trim(),
+            correo = correo.trim().lowercase(),
+            clave = clave,
+            rol = Rol.CLIENTE.name
+        )
+        val id = usuarioDao.registrar(nuevo)
+        return if (id == -1L) null else nuevo.copy(id = id.toInt())
+    }
+
     // -----------------------------------------------------------------------
     // Productos
     // -----------------------------------------------------------------------
