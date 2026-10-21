@@ -120,6 +120,7 @@ fun NavCafe(
     val sinBarra = rutaActual in listOf(
         Rutas.SPLASH,
         Rutas.LOGIN,
+        Rutas.REGISTRO,
         Rutas.DETALLE_PRODUCTO,
         Rutas.CONFIRMAR_PEDIDO,
         Rutas.SEGUIMIENTO,
