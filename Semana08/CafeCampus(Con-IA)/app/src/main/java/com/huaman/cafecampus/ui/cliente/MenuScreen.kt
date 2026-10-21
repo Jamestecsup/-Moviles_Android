@@ -63,12 +63,7 @@ fun MenuScreen(
     val productos by vm.productos.collectAsStateWithLifecycle()
     val visibles by vm.productosVisibles.collectAsStateWithLifecycle()
     val categoria by vm.categoria.collectAsStateWithLifecycle()
-    var busqueda by remember { mutableStateOf("") }
-
-    val filtrados = remember(visibles, busqueda) {
-        if (busqueda.isBlank()) visibles
-        else visibles.filter { it.nombre.contains(busqueda, ignoreCase = true) }
-    }
+    val busqueda by vm.busqueda.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -166,10 +161,11 @@ fun MenuScreen(
             }
         }
 
-        // Buscador
+        // Buscador: la View solo avisa lo que se escribe, el filtro vive en
+        // el MenuViewModel.
         BuscadorCafe(
             valor = busqueda,
-            onValorChange = { busqueda = it },
+            onValorChange = { vm.buscar(it) },
             modifier = Modifier.padding(top = 14.dp)
         )
 
@@ -205,7 +201,7 @@ fun MenuScreen(
             modifier = Modifier.padding(top = 18.dp, bottom = 10.dp)
         )
 
-        // Grilla de productos
+        // Grilla de productos (ya filtrada por el ViewModel)
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(bottom = 16.dp),
@@ -213,8 +209,8 @@ fun MenuScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(filtrados.size, key = { filtrados[it].id }) { indice ->
-                val oferta = filtrados[indice]
+            items(visibles.size, key = { visibles[it].id }) { indice ->
+                val oferta = visibles[indice]
                 ProductoCard(
                     producto = oferta.producto,
                     onClick = { onProducto(oferta.id) },

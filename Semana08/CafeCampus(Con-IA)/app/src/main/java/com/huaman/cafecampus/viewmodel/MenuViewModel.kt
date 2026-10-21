@@ -62,10 +62,28 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
     private val _categoria = MutableStateFlow(Categoria.TODAS)
     val categoria: StateFlow<String> = _categoria.asStateFlow()
 
-    /** Productos ya filtrados por categoria: es lo que dibuja la pantalla. */
+    /**
+     * Texto de la barra de busqueda.
+     *
+     * La busqueda vive AQUI, no en el Composable: la View solo avisa lo que
+     * se escribe y dibuja lo que le llega. Asi el filtro se puede probar
+     * sin levantar la UI.
+     */
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
+    /**
+     * Productos ya filtrados por categoria Y por nombre: es lo que dibuja la
+     * pantalla. Un unico `combine` de los tres StateFlow.
+     */
     val productosVisibles: StateFlow<List<ProductoEnOferta>> =
-        combine(ofertas, _categoria) { lista, cat ->
-            if (cat == Categoria.TODAS) lista else lista.filter { it.categoria == cat }
+        combine(ofertas, _categoria, _busqueda) { lista, cat, texto ->
+            val porCategoria = if (cat == Categoria.TODAS) {
+                lista
+            } else {
+                lista.filter { it.categoria == cat }
+            }
+            porCategoria.filtrarPorNombre(texto)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -219,7 +237,39 @@ class MenuViewModel(private val repo: CafeRepository) : ViewModel() {
         _categoria.value = cat
     }
 
+    /** Actualiza el texto de la busqueda mientras el usuario escribe. */
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+    }
+
+    /** Limpia la busqueda. */
+    fun limpiarBusqueda() {
+        _busqueda.value = ""
+    }
+
     /** La oferta de un producto, con la promocion ya aplicada. */
     fun ofertaDe(id: Int): ProductoEnOferta? =
         ofertas.value.firstOrNull { it.id == id }
 }
+
+/**
+ * Filtra por nombre, ignorando mayusculas, acentos y espacios sobrantes.
+ *
+ * Vive en el ViewModel (no en el Composable) y es una funcion pura, asi que
+ * se puede probar sola.
+ */
+internal fun List<ProductoEnOferta>.filtrarPorNombre(texto: String): List<ProductoEnOferta> {
+    val limpio = texto.trim()
+    if (limpio.isEmpty()) return this
+    val needle = limpiar(limpio)
+    if (needle.isEmpty()) return this
+    return filter { limpiar(it.nombre).contains(needle, ignoreCase = true) }
+}
+
+/** Quita acentos y pasa a minusculas, para que "cafe" encuentre "Cafe". */
+private fun limpiar(texto: String): String =
+    java.text.Normalizer
+        .normalize(texto, java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+        .lowercase()
+        .trim()
