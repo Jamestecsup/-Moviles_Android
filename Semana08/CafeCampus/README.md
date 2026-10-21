@@ -139,6 +139,7 @@ com.huaman.cafecampus
 │       ├── CafeRepository.kt        EL CONTRATO (interface)
 │       └── CafeRepositoryRoom.kt    la unica que conoce los DAOs
 ├── model                            Rol · EstadoPedido · ItemCarrito
+│                                    ProductoEnOferta · CalculoPromociones
 ├── viewmodel
 │   ├── CafeViewModelFactory.kt      ViewModels compartidos
 │   ├── MenuViewModel.kt             productos + carrito
@@ -234,6 +235,9 @@ interface.
 | Admin: habilitar promoción | Vuelve a aplicarse sin volver a crearla |
 | Admin: editar promoción | Cambian el descuento y la vigencia |
 | Admin: eliminar promoción | Pide confirmación y desaparece |
+| Promoción por categoría | Baja el precio de todos los productos de esa categoría |
+| Promoción por producto | Gana sobre la de categoría, por ser más específica |
+| Precio en el pedido | Se guarda el precio final, no cambia si luego editas la promoción |
 
 ---
 
@@ -260,6 +264,30 @@ estudiante ve desde el footer de los dos perfiles.
 Las deshabilitadas **no se borran**: siguen en la base y el administrador las
 ve en la sección *"Deshabilitadas"*, así puede volver a activarlas sin
 recrearlas. Por eso `activo` es una columna y no solo un filtro de la consulta.
+
+### 7.2 Cómo se aplica al precio
+
+Una promoción no es solo información: **baja el precio de verdad**, de punta a
+punta.
+
+**Regla de aplicación** (`model/ProductoEnOferta.kt` + `CalculoPromociones`):
+
+- Una promoción aplica a **un producto** o a **una categoría entera**.
+- Si un producto tiene **ambas** (una por producto y otra por categoría),
+  **gana la del producto**: es más específica.
+- Solo cuentan las **vigentes**: `activo = 1` y dentro de `fechaInicio` / `fechaFin`.
+
+**Dónde se ve el descuento:**
+
+| Pantalla | Qué muestra |
+|---|---|
+| **Menú** | Precio final en color del perfil, precio de lista **tachado** y etiqueta `-X%` sobre la foto |
+| **Detalle del producto** | Precio final, precio de lista tachado y total ya descontado |
+| **Carrito** | Precio final por línea, original tachado y una fila **"Descuentos"** con el ahorro |
+| **Pedido** | `detalle_pedido.precioUnitario` guarda el **precio final** |
+
+> El pedido guarda el precio **con descuento**, que es una foto del momento: si
+> mañana el administrador cambia la promoción, ese pedido **no se altera**.
 
 ---
 
