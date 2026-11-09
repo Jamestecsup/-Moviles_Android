@@ -3,8 +3,9 @@
 Aplicación Android en Kotlin con **Jetpack Compose + MVVM + Retrofit + Room + Firebase Auth**.
 Tema **Pokémon** con los tres tipos del grupo: fuego (`fire`), agua (`water`) y planta (`grass`).
 
-> **Fase 1 (sin IA).** Incluye la aplicación funcional de catálogo Pokémon.
-> La mejora con IA, `PROMPTS.md` y las pruebas avanzadas R12/R13 pertenecen a la fase 2.
+> **Fase 2 (con IA).** Proyecto copiado de la Fase 1 (`Semana12/CatalogoPokemon(Sin IA)`,
+> rama `Sin-IA`) sobre el que se aplican las mejoras asistidas por IA, las pruebas
+> unitarias R12 y la documentación en `PROMPTS.md`.
 
 ## API
 
@@ -52,6 +53,10 @@ app/src/main/java/com/tecsup/catalogo/
     ├── admin/AdminScreen.kt · AdminViewModel.kt
     ├── components/Cargando.kt · ErrorView.kt · ItemCard.kt
     └── theme/
+
+app/src/test/java/com/tecsup/catalogo/
+├── MainDispatcherRule.kt
+└── ui/lista/ListaViewModelTest.kt
 ```
 
 ## Proceso del proyecto
@@ -68,6 +73,15 @@ app/src/main/java/com/tecsup/catalogo/
 6. Se conectaron las pantallas de catálogo, detalle, favoritos y administración,
    y se añadió una notificación local al sincronizar.
 
+**Fase 2 (con IA):**
+
+7. Se agregó un buscador por nombre o tipo en la lista. El texto vive en
+   `ListaViewModel`, filtra la lista que ya está en Room y no vuelve a llamar a la API.
+8. Se mejoraron los mensajes de error (sin conexión, error del servidor e inesperado)
+   y el estado vacío, con un botón para limpiar la búsqueda.
+9. Se escribieron seis pruebas unitarias de `ListaViewModel` con repositorio y
+   notificador falsos, y se documentaron las consultas a la IA en `PROMPTS.md`.
+
 ## Capturas de pantalla
 
 ### Login
@@ -77,6 +91,10 @@ app/src/main/java/com/tecsup/catalogo/
 ### Lista de Pokémon
 
 ![Lista de Pokémon](docs/screenshots/02-lista.png)
+
+### Búsqueda por nombre o tipo
+
+![Búsqueda de Pokémon de tipo water](docs/screenshots/07-busqueda.png)
 
 ### Detalle
 
@@ -96,7 +114,7 @@ app/src/main/java/com/tecsup/catalogo/
 
 ## Cómo compilar
 
-1. Abrir la carpeta `Semana12/CatalogoPokemon(Sin IA)` en Android Studio.
+1. Abrir la carpeta `Semana12/CatalogoPokemon(Con IA)` en Android Studio.
 2. Sincronizar Gradle.
 3. Ejecutar en un emulador.
 
@@ -150,6 +168,33 @@ Firebase no está configurado.
 - Notificación local al terminar de sincronizar (canal y permiso).
 - Modo sin conexión: si hay datos guardados se muestran con aviso; si no, error con Reintentar.
 
+**Mejoras de la Fase 2 (con IA):**
+
+- Buscador por nombre o tipo que filtra la lista guardada, sin otra llamada a la API.
+- Estado vacío distinto cuando la búsqueda no tiene coincidencias, con botón para
+  limpiar el filtro.
+- Mensajes de error más claros (sin conexión, error del servidor, error inesperado) y
+  pantalla de error con título, explicación y botón Reintentar.
+- Seis pruebas unitarias de `ListaViewModel` con `ItemRepository` y `Notificador` falsos.
+
+## Pruebas unitarias (R12)
+
+Las pruebas están en `app/src/test/java/com/tecsup/catalogo/` y no usan Android,
+Room ni internet: un repositorio falso y un notificador falso alimentan al ViewModel.
+
+```powershell
+.\gradlew :app:testDebugUnitTest
+```
+
+Cubren seis casos:
+
+1. La lista guardada se publica como `UiState.Exito`.
+2. Al sincronizar con éxito se notifica `Se guardaron N elementos`.
+3. Sin conexión y sin caché se muestra `UiState.Error` con el mensaje de red.
+4. Sin conexión con datos guardados se conserva la lista y se muestra el aviso.
+5. El buscador filtra por nombre y por tipo.
+6. Una búsqueda sin coincidencias devuelve una lista vacía.
+
 ## Reparto de tareas
 
 | Integrante | Tareas |
@@ -157,8 +202,10 @@ Firebase no está configurado.
 | _(completar)_ | Estructura del proyecto, Retrofit, Room y pantallas de lista/detalle. |
 | _(completar)_ | Firebase Auth/Firestore, roles, panel Admin, notificación, pruebas y README. |
 
-## Pendiente para la Fase 2 (con IA)
+## Entregables de la Fase 2 (con IA)
 
-- `PROMPTS.md`.
+- Rama `Con-IA` (equivalente a `mejora-ia`) con los commits de la fase.
+- `PROMPTS.md` con una entrada por consulta a la IA.
 - Pruebas unitarias del ViewModel de la lista (R12).
-- Rama `mejora-ia`, Pull Request y versión `v1.0`.
+- Pull Request de `Con-IA` hacia `main`.
+- Versión `v1.0` con el APK de depuración adjunto en la entrega.
