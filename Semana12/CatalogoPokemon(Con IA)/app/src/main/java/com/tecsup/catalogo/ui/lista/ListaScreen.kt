@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,13 +13,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.CatchingPokemon
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -51,6 +55,7 @@ fun ListaScreen(
 ) {
     val estado by vm.estado.collectAsStateWithLifecycle()
     val aviso by vm.aviso.collectAsStateWithLifecycle()
+    val consulta by vm.consulta.collectAsStateWithLifecycle()
 
     val snackbar = remember { SnackbarHostState() }
 
@@ -101,54 +106,102 @@ fun ListaScreen(
             )
 
             is UiState.Exito -> {
-                if (actual.datos.isEmpty()) {
-                    Column(
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    OutlinedTextField(
+                        value = consulta,
+                        onValueChange = vm::buscar,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding)
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CatchingPokemon,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Todavía no hay Pokémon guardados",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(vertical = 12.dp)
-                        )
-                        Text(
-                            text = "Pulsa Sincronizar para descargar el catálogo.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                        Button(
-                            onClick = vm::refrescar,
-                            modifier = Modifier.padding(top = 16.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        placeholder = { Text("Buscar por nombre o tipo") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null)
+                        },
+                        trailingIcon = {
+                            if (consulta.isNotEmpty()) {
+                                IconButton(onClick = vm::limpiarBusqueda) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = "Limpiar búsqueda"
+                                    )
+                                }
+                            }
+                        },
+                        singleLine = true
+                    )
+
+                    if (actual.datos.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Text("Sincronizar")
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        items(actual.datos, key = { it.id }) { item ->
-                            ItemCard(
-                                item = item,
-                                onClick = { onDetalle(item.id) },
-                                onAlternarFavorito = { vm.alternarFavorito(item.id) }
+                            Icon(
+                                imageVector = Icons.Default.CatchingPokemon,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.primary
                             )
+                            if (consulta.isBlank()) {
+                                Text(
+                                    text = "Todavía no hay Pokémon guardados",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 12.dp)
+                                )
+                                Text(
+                                    text = "Pulsa Sincronizar para descargar el catálogo.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                Button(
+                                    onClick = vm::refrescar,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                ) {
+                                    Text("Sincronizar")
+                                }
+                            } else {
+                                Text(
+                                    text = "No hay Pokémon que coincidan con «$consulta»",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 12.dp)
+                                )
+                                Text(
+                                    text = "Prueba con otro nombre o tipo, por ejemplo fire, water o grass.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                Button(
+                                    onClick = vm::limpiarBusqueda,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                ) {
+                                    Text("Limpiar búsqueda")
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(actual.datos, key = { it.id }) { item ->
+                                ItemCard(
+                                    item = item,
+                                    onClick = { onDetalle(item.id) },
+                                    onAlternarFavorito = { vm.alternarFavorito(item.id) }
+                                )
+                            }
                         }
                     }
                 }
