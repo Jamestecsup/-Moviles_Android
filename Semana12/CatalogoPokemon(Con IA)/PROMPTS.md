@@ -164,3 +164,31 @@ al final, cuando el build y las pruebas ya estaban verificados.
 **Qué aprendimos:**
 Que la documentación también es parte de la entrega y que conviene generarla al mismo
 tiempo que el código para no olvidar ningún requisito de la rúbrica.
+
+---
+
+## Consulta 6 — Colores por tipo de Pokémon
+
+**Fecha:** 2026-11-08
+**Herramienta:** OpenCode
+
+**Prompt:**
+
+> "Haz que las tarjetas y las etiquetas de tipo usen un color según el tipo de
+> Pokémon: fuego rojo, agua azul, planta verde, tierra verde, eléctrico amarillo,
+> veneno morado, etc. Que se note en la lista y en el detalle."
+
+**Qué respondió (resumen):**
+Propuso una función `coloresDeTipo()` que traduce el nombre del tipo (en inglés o en
+español) a un par de colores de fondo y texto, un composable `TipoChip` reutilizable y
+usar el color del primer tipo para teñir suavemente la tarjeta y la imagen del detalle.
+
+**Qué usamos / qué cambiamos y por qué:**
+Se aceptó la idea. Se corrigió el color de `tierra`: primero se puso marrón y luego se
+cambió a verde por pedido del usuario, para que coincida con los tipos del grupo
+(fuego, agua y planta). La tarjeta usa el color con 12 % de transparencia para no
+perder legibilidad, y la etiqueta del tipo va con el color sólido y texto blanco.
+
+**Qué aprendimos:**
+Que centralizar la paleta en una sola función evita repetir `when` en cada pantalla y
+que usar el color con transparencia mantiene el contraste del texto.

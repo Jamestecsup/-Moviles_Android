@@ -1,6 +1,7 @@
 package com.tecsup.catalogo.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.tecsup.catalogo.domain.model.Item
+import com.tecsup.catalogo.ui.theme.coloresDeTipo
 
 @Composable
 fun ItemCard(
@@ -34,12 +37,24 @@ fun ItemCard(
     onAlternarFavorito: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val tipos = remember(item.tipos, item.subtitulo) {
+        if (item.tipos.isNotEmpty()) {
+            item.tipos
+        } else {
+            item.subtitulo.split("/")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+        }
+    }
+    val colorDelTipo = coloresDeTipo(tipos.firstOrNull().orEmpty()).fondo
+
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = colorDelTipo.copy(alpha = 0.12f),
+            contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
         Row(
@@ -68,13 +83,14 @@ fun ItemCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = item.subtitulo,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    tipos.forEach { tipo ->
+                        TipoChip(tipo = tipo)
+                    }
+                }
             }
 
             IconButton(onClick = onAlternarFavorito) {

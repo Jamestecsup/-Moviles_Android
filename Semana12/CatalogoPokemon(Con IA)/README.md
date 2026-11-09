@@ -173,6 +173,8 @@ Firebase no está configurado.
 - Buscador por nombre o tipo que filtra la lista guardada, sin otra llamada a la API.
 - Estado vacío distinto cuando la búsqueda no tiene coincidencias, con botón para
   limpiar el filtro.
+- Colores por tipo de Pokémon en las tarjetas y en las etiquetas: fuego rojo, agua
+  azul, planta y tierra verde, eléctrico amarillo, veneno morado, etc.
 - Mensajes de error más claros (sin conexión, error del servidor, error inesperado) y
   pantalla de error con título, explicación y botón Reintentar.
 - Seis pruebas unitarias de `ListaViewModel` con `ItemRepository` y `Notificador` falsos.

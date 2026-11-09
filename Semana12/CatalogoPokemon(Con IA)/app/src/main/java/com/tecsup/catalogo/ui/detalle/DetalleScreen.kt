@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -39,6 +38,8 @@ import com.tecsup.catalogo.domain.model.Item
 import com.tecsup.catalogo.ui.UiState
 import com.tecsup.catalogo.ui.components.Cargando
 import com.tecsup.catalogo.ui.components.ErrorView
+import com.tecsup.catalogo.ui.components.TipoChip
+import com.tecsup.catalogo.ui.theme.coloresDeTipo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,6 +90,8 @@ private fun DetalleContenido(
     onAlternarFavorito: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorDelTipo = coloresDeTipo(item.tipos.firstOrNull().orEmpty()).fondo
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -102,7 +105,7 @@ private fun DetalleContenido(
             modifier = Modifier
                 .size(220.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(colorDelTipo.copy(alpha = 0.15f)),
             contentScale = ContentScale.Fit
         )
 
@@ -119,17 +122,7 @@ private fun DetalleContenido(
                 modifier = Modifier.padding(top = 8.dp)
             ) {
                 item.tipos.forEach { tipo ->
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        Text(
-                            text = tipo,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                        )
-                    }
+                    TipoChip(tipo = tipo)
                 }
             }
         }
