@@ -13,9 +13,11 @@ import com.tecsup.campusgps.model.LugarConDistancia
 import com.tecsup.campusgps.model.UbicacionUi
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.ScaleBarOverlay
 
 @Composable
 fun MapaUbicacion(
@@ -31,8 +33,16 @@ fun MapaUbicacion(
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
+            // Mejora 3: Controles nativos en pantalla
+            zoomController.setVisibility(CustomZoomButtonsController.Visibility.ALWAYS)
             controller.setZoom(14.5)
             controller.setCenter(GeoPoint(-12.0464, -77.0428))
+
+            val scaleBar = ScaleBarOverlay(this).apply {
+                setCentred(false)
+                setScaleBarOffset(20, 20)
+            }
+            overlays.add(scaleBar)
         }
     }
 
@@ -55,7 +65,12 @@ fun MapaUbicacion(
     }
 
     LaunchedEffect(estado, lugares, masCercanoId, radioCercania) {
+        // Mantener la barra de escala y limpiar los demás
+        val scaleBar = mapView.overlays.filterIsInstance<ScaleBarOverlay>().firstOrNull()
         mapView.overlays.clear()
+        if (scaleBar != null) {
+            mapView.overlays.add(scaleBar)
+        }
 
         // Marcador de usuario y círculo de radio de cercanía
         if (estado is UbicacionUi.Lista) {
