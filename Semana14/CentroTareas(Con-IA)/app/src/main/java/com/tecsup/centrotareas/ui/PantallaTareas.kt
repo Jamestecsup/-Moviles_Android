@@ -219,7 +219,6 @@ fun PantallaTareas(
                     when (val actual = primos) {
                         is PrimosUi.Inicial -> {}
                         is PrimosUi.Calculando -> {
-                            // Mejora 2: Barra de progreso visual para el cálculo
                             LinearProgressIndicator(
                                 progress = { progresoPrimos },
                                 modifier = Modifier
@@ -266,7 +265,7 @@ fun PantallaTareas(
                 }
             }
 
-            // TARJETA 3: Dos cargas
+            // TARJETA 3: Dos cargas (Mejora 3: Reintento inteligente)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -314,13 +313,22 @@ fun PantallaTareas(
                             Text("Una por una")
                         }
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         Button(
                             onClick = { vm.cargarALaVez() },
                             enabled = !cargando
                         ) {
                             Text("A la vez")
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = { vm.cargarConReintentoAutomatico() },
+                            enabled = !cargando
+                        ) {
+                            Text("Reintento 3x")
                         }
                     }
 
@@ -385,7 +393,7 @@ fun PantallaTareas(
                             OutlinedButton(
                                 onClick = { vm.reintentarCarga() }
                             ) {
-                                Text("Reintentar")
+                                Text("Reintentar con backoff")
                             }
                         }
                     }

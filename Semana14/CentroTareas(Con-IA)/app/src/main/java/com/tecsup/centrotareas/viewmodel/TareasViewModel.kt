@@ -7,12 +7,15 @@ import com.tecsup.centrotareas.model.CargaUi
 import com.tecsup.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
@@ -75,7 +78,6 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         trabajoPrimos = viewModelScope.launch {
             try {
                 val inicio = System.currentTimeMillis()
-                // Mejora 2: Contar primos con reporte de progreso
                 val cantidad = repo.contarPrimosConProgreso(hasta) { avance ->
                     _progresoPrimos.value = avance
                 }
@@ -93,7 +95,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _primos.value = PrimosUi.Cancelado
     }
 
-    // ----- Dos cargas (pasos 6 y 7) -----
+    // ----- Dos cargas (Mejora 3: Tiempo máximo y reintento automático) -----
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
 
@@ -130,13 +132,17 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 val inicio = System.currentTimeMillis()
-                val (perfil, pedidos) = coroutineScope {
-                    val p = async { repo.cargarPerfil() }
-                    val o = async { repo.cargarPedidos(_simularError.value) }
-                    Pair(p.await(), o.await())
+                val (perfil, pedidos) = withTimeout(4000L) {
+                    coroutineScope {
+                        val p = async { repo.cargarPerfil() }
+                        val o = async { repo.cargarPedidos(_simularError.value) }
+                        Pair(p.await(), o.await())
+                    }
                 }
                 val ms = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito("A la vez", perfil, pedidos.size, ms)
+            } catch (e: TimeoutCancellationException) {
+                _carga.value = CargaUi.Error("Tardó demasiado tiempo (Tiempo límite de 4s excedido)")
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -145,7 +151,53 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         }
     }
 
+    // Mejora 3: Reintento automático inteligente con backoff progresivo (hasta 3 intentos)
+    fun cargarConReintentoAutomatico(intentosMaximos: Int = 3) {
+        if (_carga.value is CargaUi.Cargando) return
+
+        _carga.value = CargaUi.Cargando
+        viewModelScope.launch {
+            var intentoActual = 1
+            var ultimoError: Throwable? = null
+            val inicio = System.currentTimeMillis()
+
+            while (intentoActual <= intentosMaximos) {
+                try {
+                    val (perfil, pedidos) = withTimeout(4000L) {
+                        coroutineScope {
+                            val p = async { repo.cargarPerfil() }
+                            val o = async { repo.cargarPedidos(_simularError.value) }
+                            Pair(p.await(), o.await())
+                        }
+                    }
+                    val ms = System.currentTimeMillis() - inicio
+                    val detalleModo = if (intentoActual == 1) "A la vez" else "A la vez (Reintento #$intentoActual)"
+                    _carga.value = CargaUi.Exito(detalleModo, perfil, pedidos.size, ms)
+                    return@launch
+                } catch (e: TimeoutCancellationException) {
+                    ultimoError = e
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    ultimoError = e
+                }
+
+                if (intentoActual < intentosMaximos) {
+                    delay(intentoActual * 600L) // Backoff progresivo
+                }
+                intentoActual++
+            }
+
+            val mensajeFalla = if (ultimoError is TimeoutCancellationException) {
+                "Tardó demasiado tiempo en los $intentosMaximos intentos"
+            } else {
+                "No se pudo cargar tras $intentosMaximos intentos: ${ultimoError?.message ?: "Sin conexión"}"
+            }
+            _carga.value = CargaUi.Error(mensajeFalla)
+        }
+    }
+
     fun reintentarCarga() {
-        cargarALaVez()
+        cargarConReintentoAutomatico()
     }
 }
