@@ -74,8 +74,8 @@ fun PantallaTareas(
                         Text("Tócame: $toques")
                     }
 
-                    Button(onClick = { vm.tareaLargaMala() }) {
-                        Text("Tarea larga (MAL)")
+                    Button(onClick = { vm.tareaLarga() }) {
+                        Text("Tarea larga")
                     }
 
                     Text(text = mensaje, fontSize = 14.sp)
