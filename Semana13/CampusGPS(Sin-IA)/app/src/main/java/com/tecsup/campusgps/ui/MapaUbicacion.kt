@@ -1,4 +1,4 @@
-﻿package com.tecsup.campusgps.ui
+package com.tecsup.campusgps.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -21,6 +21,7 @@ fun MapaUbicacion(
     estado: UbicacionUi,
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
+    masCercanoId: Int? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -39,6 +40,9 @@ fun MapaUbicacion(
     val iconLugar = remember(context) {
         ContextCompat.getDrawable(context, R.drawable.ic_marker_lugar)
     }
+    val iconCercano = remember(context) {
+        ContextCompat.getDrawable(context, R.drawable.ic_marker_cercano)
+    }
 
     DisposableEffect(Unit) {
         mapView.onResume()
@@ -48,9 +52,10 @@ fun MapaUbicacion(
         }
     }
 
-    LaunchedEffect(estado, lugares) {
+    LaunchedEffect(estado, lugares, masCercanoId) {
         mapView.overlays.clear()
 
+        // Marcador de ubicación actual del usuario
         if (estado is UbicacionUi.Lista) {
             val userPos = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
             val markerUsuario = Marker(mapView).apply {
@@ -62,13 +67,15 @@ fun MapaUbicacion(
             mapView.overlays.add(markerUsuario)
         }
 
+        // Marcadores de los lugares del campus
         for (item in lugares) {
+            val esMasCercano = item.lugar.id == masCercanoId
             val markerLugar = Marker(mapView).apply {
                 position = GeoPoint(item.lugar.latitud, item.lugar.longitud)
                 title = item.lugar.nombre
                 snippet = item.lugar.categoria
                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                icon = iconLugar
+                icon = if (esMasCercano) iconCercano else iconLugar
             }
             mapView.overlays.add(markerLugar)
         }
