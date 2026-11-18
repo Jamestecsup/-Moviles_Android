@@ -1,4 +1,4 @@
-package com.tecsup.campusgps.ui
+﻿package com.tecsup.campusgps.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -15,6 +15,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
 
 @Composable
 fun MapaUbicacion(
@@ -22,6 +23,7 @@ fun MapaUbicacion(
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
     masCercanoId: Int? = null,
+    radioCercania: Float? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -52,12 +54,24 @@ fun MapaUbicacion(
         }
     }
 
-    LaunchedEffect(estado, lugares, masCercanoId) {
+    LaunchedEffect(estado, lugares, masCercanoId, radioCercania) {
         mapView.overlays.clear()
 
-        // Marcador de ubicación actual del usuario
+        // Marcador de usuario y círculo de radio de cercanía
         if (estado is UbicacionUi.Lista) {
             val userPos = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
+
+            // Mejora 2: Polígono circular de radio en OpenStreetMap
+            if (radioCercania != null) {
+                val circle = Polygon(mapView).apply {
+                    points = Polygon.pointsAsCircle(userPos, radioCercania.toDouble())
+                    fillPaint.color = android.graphics.Color.argb(45, 21, 101, 192)
+                    outlinePaint.color = android.graphics.Color.rgb(21, 101, 192)
+                    outlinePaint.strokeWidth = 3f
+                }
+                mapView.overlays.add(circle)
+            }
+
             val markerUsuario = Marker(mapView).apply {
                 position = userPos
                 title = "Estás aquí"

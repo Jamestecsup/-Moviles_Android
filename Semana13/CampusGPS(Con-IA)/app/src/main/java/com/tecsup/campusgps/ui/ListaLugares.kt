@@ -1,4 +1,4 @@
-package com.tecsup.campusgps.ui
+﻿package com.tecsup.campusgps.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -36,6 +36,7 @@ fun ListaLugares(
     seleccionado: Int?,
     onClick: (Int) -> Unit,
     masCercanoId: Int? = null,
+    radioCercania: Float? = null,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -47,6 +48,7 @@ fun ListaLugares(
         ) { item ->
             val esSeleccionado = item.lugar.id == seleccionado
             val esMasCercano = item.lugar.id == masCercanoId
+            val enRadio = radioCercania != null && item.metros != null && item.metros <= radioCercania
 
             Card(
                 modifier = Modifier
@@ -80,12 +82,30 @@ fun ListaLugares(
                     Column(
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = item.lugar.nombre,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = Color(0xFF1A1A1A)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = item.lugar.nombre,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color(0xFF1A1A1A)
+                            )
+                            if (enRadio) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color(0xFFE8F5E9))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "En radio",
+                                        color = Color(0xFF2E7D32),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                         Text(
                             text = item.lugar.categoria,
                             fontSize = 12.sp,

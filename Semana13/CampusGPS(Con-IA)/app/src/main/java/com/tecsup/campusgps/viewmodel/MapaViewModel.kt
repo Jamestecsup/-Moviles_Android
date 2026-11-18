@@ -41,6 +41,12 @@ class MapaViewModel(
 
     val categorias: List<String> = listOf("Todas", "Estudio", "Comida", "Eventos", "Servicios")
 
+    // Mejora 2: Radio de cercanía
+    private val _radioCercania = MutableStateFlow<Float?>(null)
+    val radioCercania: StateFlow<Float?> = _radioCercania.asStateFlow()
+
+    val radiosDisponibles: List<Float?> = listOf(null, 100f, 200f, 500f)
+
     val lugaresFiltrados: StateFlow<List<LugarConDistancia>> = combine(
         _lugares,
         _categoriaSeleccionada
@@ -58,6 +64,10 @@ class MapaViewModel(
 
     fun seleccionarCategoria(categoria: String?) {
         _categoriaSeleccionada.value = if (categoria == "Todas") null else categoria
+    }
+
+    fun seleccionarRadio(radio: Float?) {
+        _radioCercania.value = radio
     }
 
     fun buscar() {

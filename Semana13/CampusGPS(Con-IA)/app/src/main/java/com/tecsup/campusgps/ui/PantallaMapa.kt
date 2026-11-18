@@ -49,6 +49,7 @@ fun PantallaMapa(
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
     val categoriaSeleccionada by vm.categoriaSeleccionada.collectAsState()
+    val radioCercania by vm.radioCercania.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -132,6 +133,7 @@ fun PantallaMapa(
                     lugares = lugares,
                     seleccionado = seleccionado,
                     masCercanoId = masCercano?.id,
+                    radioCercania = radioCercania,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -201,6 +203,32 @@ fun PantallaMapa(
                         }
                     }
 
+                    // Mejora 2: Selector de radio de cercanía
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Radio:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        vm.radiosDisponibles.forEach { radio ->
+                            val esSeleccionado = radioCercania == radio
+                            val etiqueta = if (radio == null) "Todos" else " m"
+
+                            FilterChip(
+                                selected = esSeleccionado,
+                                onClick = { vm.seleccionarRadio(radio) },
+                                label = { Text(etiqueta, fontSize = 11.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
+                        }
+                    }
+
                     when (val actual = estado) {
                         is UbicacionUi.Inicial -> {
                             Spacer(modifier = Modifier.height(6.dp))
@@ -216,9 +244,10 @@ fun PantallaMapa(
                                 seleccionado = seleccionado,
                                 onClick = { vm.seleccionar(it) },
                                 masCercanoId = masCercano?.id,
+                                radioCercania = radioCercania,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
+                                    .height(180.dp)
                             )
                         }
                         is UbicacionUi.Error -> {
