@@ -4,18 +4,24 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -24,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,9 +47,10 @@ fun PantallaMapa(
     modifier: Modifier = Modifier
 ) {
     val estado by vm.estado.collectAsState()
-    val lugares by vm.lugares.collectAsState()
+    val lugares by vm.lugaresFiltrados.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
+    val categoriaSeleccionada by vm.categoriaSeleccionada.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -166,6 +174,39 @@ fun PantallaMapa(
                             fontSize = 13.sp,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
+                    }
+
+                    // Barra de categorías con fondo blanco permanente
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.White
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            vm.categorias.forEach { cat ->
+                                val seleccionadoActual = if (cat == "Todas") {
+                                    categoriaSeleccionada == null
+                                } else {
+                                    categoriaSeleccionada.equals(cat, ignoreCase = true)
+                                }
+
+                                FilterChip(
+                                    selected = seleccionadoActual,
+                                    onClick = { vm.seleccionarCategoria(cat) },
+                                    label = { Text(cat, fontSize = 12.sp) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = Color.White,
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                )
+                            }
+                        }
                     }
 
                     when (val actual = estado) {
