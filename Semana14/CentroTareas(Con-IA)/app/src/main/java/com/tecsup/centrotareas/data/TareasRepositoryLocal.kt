@@ -3,6 +3,9 @@ package com.tecsup.centrotareas.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
@@ -28,6 +31,14 @@ class TareasRepositoryLocal : TareasRepository {
         }
         cantidad
     }
+
+    // Mejora 1: Progreso emitido desde el Repository con Flow desacoplado
+    override fun ejecutarTareaConProgreso(): Flow<Float> = flow {
+        for (i in 1..100) {
+            delay(40)
+            emit(i / 100f)
+        }
+    }.flowOn(Dispatchers.Default)
 
     private fun esPrimo(n: Int): Boolean {
         var d = 2
