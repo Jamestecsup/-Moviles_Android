@@ -9,4 +9,7 @@ interface TareasRepository {
 
     // Mejora 1: Progreso desde el Repository con Flow
     fun ejecutarTareaConProgreso(): Flow<Float>
+
+    // Mejora 2: Primos con progreso continuo en tiempo real
+    suspend fun contarPrimosConProgreso(hasta: Int, onProgreso: (Float) -> Unit): Int
 }

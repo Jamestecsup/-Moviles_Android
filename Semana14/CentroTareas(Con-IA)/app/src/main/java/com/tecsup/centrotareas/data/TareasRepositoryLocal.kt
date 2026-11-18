@@ -40,6 +40,22 @@ class TareasRepositoryLocal : TareasRepository {
         }
     }.flowOn(Dispatchers.Default)
 
+    // Mejora 2: Cálculo de primos reportando progreso porcentual continuo
+    override suspend fun contarPrimosConProgreso(hasta: Int, onProgreso: (Float) -> Unit): Int = withContext(Dispatchers.Default) {
+        var cantidad = 0
+        val paso = (hasta / 100).coerceAtLeast(1)
+        for (n in 2..hasta) {
+            ensureActive()
+            if (esPrimo(n)) {
+                cantidad++
+            }
+            if (n % paso == 0 || n == hasta) {
+                onProgreso(n.toFloat() / hasta)
+            }
+        }
+        cantidad
+    }
+
     private fun esPrimo(n: Int): Boolean {
         var d = 2
         while (d.toLong() * d <= n) {

@@ -63,6 +63,7 @@ fun PantallaTareas(
     val progreso by vm.progreso.collectAsState()
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
+    val progresoPrimos by vm.progresoPrimos.collectAsState()
     val carga by vm.carga.collectAsState()
     val simularError by vm.simularError.collectAsState()
 
@@ -111,10 +112,7 @@ fun PantallaTareas(
                         modifier = Modifier.align(Alignment.Start)
                     )
 
-                    Button(
-                        onClick = { toques++ },
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
+                    Button(onClick = { toques++ }) {
                         Text("Tócame: $toques")
                     }
 
@@ -161,7 +159,7 @@ fun PantallaTareas(
                 }
             }
 
-            // TARJETA 2: Contar números primos
+            // TARJETA 2: Contar números primos (Mejora 2: Barra de progreso en vivo)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -221,8 +219,20 @@ fun PantallaTareas(
                     when (val actual = primos) {
                         is PrimosUi.Inicial -> {}
                         is PrimosUi.Calculando -> {
-                            CircularProgressIndicator(modifier = Modifier.padding(8.dp))
-                            Text("Calculando primos en segundo plano...", fontSize = 13.sp, color = Color.Gray)
+                            // Mejora 2: Barra de progreso visual para el cálculo
+                            LinearProgressIndicator(
+                                progress = { progresoPrimos },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                            )
+                            Text(
+                                text = "Progreso del cálculo: ${(progresoPrimos * 100).toInt()} %",
+                                fontSize = 13.sp,
+                                color = AzulPrincipal,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                         is PrimosUi.Cancelado -> {
                             Text("Cálculo cancelado", color = RojoError, fontWeight = FontWeight.Medium)

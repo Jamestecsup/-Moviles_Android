@@ -37,7 +37,6 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                 _progreso.value = 0f
                 _mensaje.value = "Trabajando..."
 
-                // Mejora 1: Recolección reactiva de Flow emitido por el Repository
                 repo.ejecutarTareaConProgreso().collect { avance ->
                     _progreso.value = avance
                 }
@@ -57,9 +56,12 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _mensaje.value = "Cancelado"
     }
 
-    // ----- Contar primos (paso 5) -----
+    // ----- Contar primos (Mejora 2: Progreso en tiempo real) -----
     private val _primos = MutableStateFlow<PrimosUi>(PrimosUi.Inicial)
     val primos: StateFlow<PrimosUi> = _primos.asStateFlow()
+
+    private val _progresoPrimos = MutableStateFlow(0f)
+    val progresoPrimos: StateFlow<Float> = _progresoPrimos.asStateFlow()
 
     private var trabajoPrimos: Job? = null
 
@@ -68,11 +70,15 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
         trabajoPrimos?.cancel()
         _primos.value = PrimosUi.Calculando
+        _progresoPrimos.value = 0f
 
         trabajoPrimos = viewModelScope.launch {
             try {
                 val inicio = System.currentTimeMillis()
-                val cantidad = repo.contarPrimos(hasta)
+                // Mejora 2: Contar primos con reporte de progreso
+                val cantidad = repo.contarPrimosConProgreso(hasta) { avance ->
+                    _progresoPrimos.value = avance
+                }
                 val ms = System.currentTimeMillis() - inicio
                 _primos.value = PrimosUi.Listo(cantidad, ms)
             } catch (e: CancellationException) {
