@@ -8,7 +8,6 @@ import com.tecsup.centrotareas.model.ComparacionTiempos
 import com.tecsup.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -17,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
@@ -97,7 +95,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _primos.value = PrimosUi.Cancelado
     }
 
-    // ----- Dos cargas (Mejora 3: Tiempo máximo, reintento inteligente y tabla comparativa) -----
+    // ----- Dos cargas (Mejora 3: Reintento automático inteligente y comparación de tiempos) -----
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
 
@@ -134,46 +132,44 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         val simular = _simularError.value
 
         viewModelScope.launch {
-            val inicio = System.currentTimeMillis()
-            var intento = 0
+            try {
+                val inicio = System.currentTimeMillis()
+                val (perfil, pedidos) = cargarDatosConReintentos(enParalelo, simular)
+                val ms = System.currentTimeMillis() - inicio
+                _comparacion.update { it.registrar(enParalelo, ms) }
+                _carga.value = CargaUi.Exito(modo, perfil, pedidos.size, ms)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _carga.value = CargaUi.Error("No se pudo cargar: ${e.message ?: "Sin conexión"}")
+            }
+        }
+    }
 
-            while (true) {
-                try {
-                    val (perfil, pedidos) = withTimeout(4000L) {
-                        if (enParalelo) {
-                            coroutineScope {
-                                val p = async { repo.cargarPerfil() }
-                                val o = async { repo.cargarPedidos(simular) }
-                                Pair(p.await(), o.await())
-                            }
-                        } else {
-                            val p = repo.cargarPerfil()
-                            val o = repo.cargarPedidos(simular)
-                            Pair(p, o)
-                        }
+    private suspend fun cargarDatosConReintentos(
+        enParalelo: Boolean,
+        simularError: Boolean
+    ): Pair<String, List<String>> {
+        var reintentos = 0
+        while (true) {
+            try {
+                return if (enParalelo) {
+                    coroutineScope {
+                        val perfilDeferred = async { repo.cargarPerfil() }
+                        val pedidosDeferred = async { repo.cargarPedidos(simularError) }
+                        Pair(perfilDeferred.await(), pedidosDeferred.await())
                     }
-
-                    val ms = System.currentTimeMillis() - inicio
-                    _comparacion.update { it.registrar(enParalelo, ms) }
-                    _carga.value = CargaUi.Exito(modo, perfil, pedidos.size, ms)
-                    return@launch
-                } catch (e: TimeoutCancellationException) {
-                    if (intento >= ESPERAS_REINTENTO_MS.size) {
-                        _carga.value = CargaUi.Error("Tardó demasiado tiempo (Tiempo límite excedido)")
-                        return@launch
-                    }
-                    delay(ESPERAS_REINTENTO_MS[intento])
-                    intento++
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    if (intento >= ESPERAS_REINTENTO_MS.size) {
-                        _carga.value = CargaUi.Error("No se pudo cargar: ${e.message ?: "Sin conexión"}")
-                        return@launch
-                    }
-                    delay(ESPERAS_REINTENTO_MS[intento])
-                    intento++
+                } else {
+                    val perfil = repo.cargarPerfil()
+                    val pedidos = repo.cargarPedidos(simularError)
+                    Pair(perfil, pedidos)
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (reintentos >= ESPERAS_REINTENTO_MS.size) throw e
+                delay(ESPERAS_REINTENTO_MS[reintentos])
+                reintentos++
             }
         }
     }
