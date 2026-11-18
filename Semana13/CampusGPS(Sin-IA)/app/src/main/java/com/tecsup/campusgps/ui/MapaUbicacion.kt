@@ -20,6 +20,7 @@ import org.osmdroid.views.overlay.Marker
 fun MapaUbicacion(
     estado: UbicacionUi,
     lugares: List<LugarConDistancia>,
+    seleccionado: Int?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -79,6 +80,16 @@ fun MapaUbicacion(
         if (estado is UbicacionUi.Lista) {
             val userPos = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
             mapView.controller.animateTo(userPos, 16.0, 1000L)
+        }
+    }
+
+    LaunchedEffect(seleccionado) {
+        if (seleccionado != null) {
+            val lugar = lugares.find { it.lugar.id == seleccionado }?.lugar
+            if (lugar != null) {
+                val destino = GeoPoint(lugar.latitud, lugar.longitud)
+                mapView.controller.animateTo(destino, 17.5, 1000L)
+            }
         }
     }
 
