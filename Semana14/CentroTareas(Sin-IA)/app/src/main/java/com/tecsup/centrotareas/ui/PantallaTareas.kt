@@ -2,10 +2,13 @@
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -13,6 +16,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tecsup.centrotareas.ui.theme.AzulPrincipal
+import com.tecsup.centrotareas.ui.theme.RojoError
 import com.tecsup.centrotareas.viewmodel.TareasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +46,7 @@ fun PantallaTareas(
 ) {
     val mensaje by vm.mensaje.collectAsState()
     val progreso by vm.progreso.collectAsState()
+    val corriendo by vm.corriendo.collectAsState()
     var toques by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
@@ -87,8 +93,25 @@ fun PantallaTareas(
                         Text("Tócame: $toques")
                     }
 
-                    Button(onClick = { vm.tareaLarga() }) {
-                        Text("Iniciar")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = { vm.tareaLarga() },
+                            enabled = !corriendo
+                        ) {
+                            Text("Iniciar")
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        OutlinedButton(
+                            onClick = { vm.cancelar() },
+                            enabled = corriendo
+                        ) {
+                            Text("Cancelar")
+                        }
                     }
 
                     LinearProgressIndicator(
@@ -105,7 +128,11 @@ fun PantallaTareas(
                         fontWeight = FontWeight.Medium
                     )
 
-                    Text(text = mensaje, fontSize = 14.sp)
+                    Text(
+                        text = mensaje,
+                        fontSize = 14.sp,
+                        color = if (mensaje == "Cancelado") RojoError else Color.DarkGray
+                    )
                 }
             }
         }
