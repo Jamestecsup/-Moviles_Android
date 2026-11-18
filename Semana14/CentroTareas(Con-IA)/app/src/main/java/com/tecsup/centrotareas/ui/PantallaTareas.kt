@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -66,9 +66,11 @@ fun PantallaTareas(
     val progresoPrimos by vm.progresoPrimos.collectAsState()
     val carga by vm.carga.collectAsState()
     val simularError by vm.simularError.collectAsState()
+    val comparacion by vm.comparacion.collectAsState()
 
     var toques by rememberSaveable { mutableIntStateOf(0) }
     var textoPrimos by rememberSaveable { mutableStateOf("500000") }
+    val hasta = textoPrimos.toIntOrNull()
 
     Scaffold(
         topBar = {
@@ -87,29 +89,29 @@ fun PantallaTareas(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // TARJETA 1: Tarea con progreso
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "Tarea con progreso",
                         color = AzulPrincipal,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.align(Alignment.Start)
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Button(onClick = { toques++ }) {
@@ -118,20 +120,20 @@ fun PantallaTareas(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
                             onClick = { vm.tareaLarga() },
-                            enabled = !corriendo
+                            enabled = !corriendo,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Iniciar")
                         }
 
-                        Spacer(modifier = Modifier.width(12.dp))
-
                         OutlinedButton(
                             onClick = { vm.cancelar() },
-                            enabled = corriendo
+                            enabled = corriendo,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancelar")
                         }
@@ -139,78 +141,74 @@ fun PantallaTareas(
 
                     LinearProgressIndicator(
                         progress = { progreso },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Text(
                         text = "${(progreso * 100).toInt()} %",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.bodySmall
                     )
 
                     Text(
                         text = mensaje,
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = if (mensaje == "Cancelado") RojoError else Color.DarkGray
                     )
                 }
             }
 
-            // TARJETA 2: Contar números primos (Mejora 2: Barra de progreso en vivo)
+            // TARJETA 2: Contar números primos (con reporte de progreso en vivo)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "Contar números primos",
                         color = AzulPrincipal,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.align(Alignment.Start)
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.fillMaxWidth()
                     )
+
+                    val calculando = primos is PrimosUi.Calculando
 
                     OutlinedTextField(
                         value = textoPrimos,
                         onValueChange = { textoPrimos = it },
                         label = { Text("Hasta el número") },
                         singleLine = true,
+                        enabled = !calculando,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val calculando = primos is PrimosUi.Calculando
-
                         Button(
                             onClick = {
-                                val n = textoPrimos.toIntOrNull() ?: 0
-                                if (n >= 2) vm.contar(n)
+                                if (hasta != null && hasta >= 2) vm.contar(hasta)
                             },
-                            enabled = !calculando
+                            enabled = hasta != null && hasta >= 2 && !calculando,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Contar")
                         }
 
-                        Spacer(modifier = Modifier.width(12.dp))
-
                         OutlinedButton(
                             onClick = { vm.cancelarPrimos() },
-                            enabled = calculando
+                            enabled = calculando,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancelar")
                         }
@@ -221,42 +219,40 @@ fun PantallaTareas(
                         is PrimosUi.Calculando -> {
                             LinearProgressIndicator(
                                 progress = { progresoPrimos },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp))
+                                modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "Progreso del cálculo: ${(progresoPrimos * 100).toInt()} %",
-                                fontSize = 13.sp,
-                                color = AzulPrincipal,
-                                fontWeight = FontWeight.Medium
+                                text = "Progreso: ${(progresoPrimos * 100).toInt()} %",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = AzulPrincipal
                             )
                         }
                         is PrimosUi.Cancelado -> {
-                            Text("Cálculo cancelado", color = RojoError, fontWeight = FontWeight.Medium)
+                            Text("Cancelado", color = RojoError, style = MaterialTheme.typography.bodyMedium)
                         }
                         is PrimosUi.Listo -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(VerdeContenedor)
-                                    .padding(12.dp),
-                                contentAlignment = Alignment.Center
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = VerdeContenedor),
+                                shape = RoundedCornerShape(8.dp)
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
                                     Text(
                                         text = "Primos hasta $textoPrimos: ${actual.cantidad}",
                                         color = VerdeExito,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
+                                        fontSize = 14.sp
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(modifier = Modifier.height(2.dp))
                                     Text(
                                         text = "Tiempo: ${actual.milisegundos} ms",
                                         color = VerdeExito,
-                                        fontSize = 13.sp
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                 }
                             }
@@ -265,70 +261,60 @@ fun PantallaTareas(
                 }
             }
 
-            // TARJETA 3: Dos cargas (Mejora 3: Reintento inteligente)
+            // TARJETA 3: Dos cargas (Reintento automático transparente con backoff)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "Dos cargas",
                         color = AzulPrincipal,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.align(Alignment.Start)
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Switch(
                             checked = simularError,
                             onCheckedChange = { vm.cambiarSimularError(it) }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Simular error", fontSize = 14.sp)
+                        Text("Simular error", style = MaterialTheme.typography.bodyMedium)
                     }
 
                     val cargando = carga is CargaUi.Cargando
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
                             onClick = { vm.cargarUnaPorUna() },
-                            enabled = !cargando
+                            enabled = !cargando,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Una por una")
                         }
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
                         Button(
                             onClick = { vm.cargarALaVez() },
-                            enabled = !cargando
+                            enabled = !cargando,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("A la vez")
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Button(
-                            onClick = { vm.cargarConReintentoAutomatico() },
-                            enabled = !cargando
-                        ) {
-                            Text("Reintento 3x")
                         }
                     }
 
@@ -336,9 +322,9 @@ fun PantallaTareas(
                         is CargaUi.Inicial -> {
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(6.dp))
                                     .background(Color(0xFFF0F4F8))
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Text(
                                     text = "«Una por una» tarda ≈ 5000 ms · «A la vez» tarda ≈ 3000 ms",
@@ -348,57 +334,142 @@ fun PantallaTareas(
                             }
                         }
                         is CargaUi.Cargando -> {
-                            CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+                            CircularProgressIndicator(modifier = Modifier.padding(6.dp))
                         }
                         is CargaUi.Exito -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(VerdeContenedor)
-                                    .padding(12.dp),
-                                contentAlignment = Alignment.Center
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = VerdeContenedor),
+                                shape = RoundedCornerShape(8.dp)
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
                                     Text(
                                         text = "Modo: ${actual.modo}",
                                         fontWeight = FontWeight.Bold,
                                         color = VerdeExito,
-                                        fontSize = 15.sp
+                                        fontSize = 14.sp
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text("Perfil: ${actual.perfil}", color = VerdeExito, fontSize = 13.sp)
-                                    Text("Pedidos: ${actual.pedidos}", color = VerdeExito, fontSize = 13.sp)
-                                    Text("Tiempo: ${actual.milisegundos} ms", color = VerdeExito, fontSize = 13.sp)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text("Perfil: ${actual.perfil}", color = VerdeExito, style = MaterialTheme.typography.bodySmall)
+                                    Text("Pedidos: ${actual.pedidos}", color = VerdeExito, style = MaterialTheme.typography.bodySmall)
+                                    Text("Tiempo: ${actual.milisegundos} ms", color = VerdeExito, style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
                         is CargaUi.Error -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(RojoContenedor)
-                                    .padding(12.dp),
-                                contentAlignment = Alignment.Center
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = RojoContenedor),
+                                shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text(
-                                    text = actual.mensaje,
-                                    color = RojoError,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp
-                                )
-                            }
-
-                            OutlinedButton(
-                                onClick = { vm.reintentarCarga() }
-                            ) {
-                                Text("Reintentar con backoff")
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = actual.mensaje,
+                                        color = RojoError,
+                                        fontWeight = FontWeight.SemiBold,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    OutlinedButton(
+                                        onClick = { vm.reintentarCarga() }
+                                    ) {
+                                        Text("Reintentar")
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+
+            // TARJETA 4: Comparación de tiempos
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Comparación de tiempos",
+                        color = AzulPrincipal,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        CeldaTabla("Modo", 1.4f, negrita = true)
+                        CeldaTabla("Veces", 0.8f, negrita = true)
+                        CeldaTabla("Último", 1f, negrita = true)
+                        CeldaTabla("Promedio", 1.1f, negrita = true)
+                    }
+
+                    FilaComparacion(
+                        modo = "Una por una",
+                        tiempos = comparacion.unaPorUna,
+                        promedio = comparacion.promedioUnaPorUna
+                    )
+                    FilaComparacion(
+                        modo = "A la vez",
+                        tiempos = comparacion.aLaVez,
+                        promedio = comparacion.promedioALaVez
+                    )
+
+                    val ahorro = comparacion.ahorroMs
+                    Text(
+                        text = if (ahorro == null) {
+                            "Ejecuta ambos modos para ver la diferencia"
+                        } else {
+                            "«A la vez» es $ahorro ms más rápido en promedio"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (ahorro == null) Color.Gray else VerdeExito
+                    )
+
+                    OutlinedButton(
+                        onClick = { vm.limpiarComparacion() },
+                        enabled = comparacion.unaPorUna.isNotEmpty() || comparacion.aLaVez.isNotEmpty(),
+                        modifier = Modifier.align(Alignment.Start)
+                    ) {
+                        Text("Limpiar tabla")
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun RowScope.CeldaTabla(texto: String, peso: Float, negrita: Boolean = false) {
+    Text(
+        text = texto,
+        modifier = Modifier.weight(peso),
+        fontWeight = if (negrita) FontWeight.Bold else FontWeight.Normal,
+        style = MaterialTheme.typography.bodySmall
+    )
+}
+
+@Composable
+private fun FilaComparacion(modo: String, tiempos: List<Long>, promedio: Long?) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        CeldaTabla(modo, 1.4f)
+        CeldaTabla("${tiempos.size}", 0.8f)
+        CeldaTabla(tiempos.lastOrNull()?.let { "$it ms" } ?: "—", 1f)
+        CeldaTabla(promedio?.let { "$it ms" } ?: "—", 1.1f)
     }
 }
