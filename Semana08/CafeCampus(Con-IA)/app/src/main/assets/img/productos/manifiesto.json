@@ -1,0 +1,50 @@
+{
+  "cafe_americano.jpg": {
+    "label": "Cafe americano",
+    "file": "cafe_americano.jpg",
+    "title": "Black Coffee for Breakfast in White Porcelain Cup.jpg",
+    "author": "epSos.de",
+    "license": "CC BY 2.0",
+    "page": "https://commons.wikimedia.org/wiki/File%3ABlack%20Coffee%20for%20Breakfast%20in%20White%20Porcelain%20Cup.jpg"
+  },
+  "sandwich_pollo.jpg": {
+    "label": "Sandwich de pollo",
+    "file": "sandwich_pollo.jpg",
+    "title": "Chicken sandwich on toasted homemade bread, with Jarlsberg cheese, Ligurian walnut pesto, olive oil, and black pepper, baked and served hot - Massachusetts.jpg",
+    "author": "Daderot",
+    "license": "CC0",
+    "page": "https://commons.wikimedia.org/wiki/File%3AChicken%20sandwich%20on%20toasted%20homemade%20bread%2C%20with%20Jarlsberg%20cheese%2C%20Ligurian%20walnut%20pesto%2C%20olive%20oil%2C%20and%20black%20pepper%2C%20baked%20and%20served%20hot%20-%20Massachusetts.jpg"
+  },
+  "menu_del_dia.jpg": {
+    "label": "Menu del dia",
+    "file": "menu_del_dia.jpg",
+    "title": "Pachamanca casera.jpg",
+    "author": "MiguelAlanCS",
+    "license": "CC BY-SA 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File%3APachamanca%20casera.jpg"
+  },
+  "jugo_naranja.jpg": {
+    "label": "Jugo de naranja",
+    "file": "jugo_naranja.jpg",
+    "title": "A glass of orange juice (2015-10-10).JPG",
+    "author": "Lombroso",
+    "license": "CC BY-SA 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File%3AA%20glass%20of%20orange%20juice%20(2015-10-10).JPG"
+  },
+  "empanada.jpg": {
+    "label": "Empanada",
+    "file": "empanada.jpg",
+    "title": "Empanada venezolana 2.jpg",
+    "author": "Muago",
+    "license": "CC0",
+    "page": "https://commons.wikimedia.org/wiki/File%3AEmpanada%20venezolana%202.jpg"
+  },
+  "chicha_morada.jpg": {
+    "label": "Chicha morada",
+    "file": "chicha_morada.jpg",
+    "title": "Lyon 7e - Rue de la Thibaudière - Restaurant Krioya - Verre de chicha morada.jpg",
+    "author": "Romainbehar",
+    "license": "CC0",
+    "page": "https://commons.wikimedia.org/wiki/File:Lyon_7e_-_Rue_de_la_Thibaudi%C3%A8re_-_Restaurant_Krioya_-_Verre_de_chicha_morada.jpg"
+  }
+}

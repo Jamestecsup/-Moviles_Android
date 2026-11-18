@@ -1,0 +1,22 @@
+﻿# Registro de Consultas y Decisiones Técnicas con IA (PROMPTS.md)
+
+Este documento registra el proceso de diseño, consulta y adaptación técnica de las **3 mejoras profesionales** implementadas en la **Fase 2 (Con IA)** para la aplicación **CampusGPS**, garantizando el respeto irrestricto al patrón arquitectónico **MVVM + Repository**, las mejores prácticas de **Jetpack Compose** y el uso del motor cartográfico libre **OpenStreetMap (osmdroid)**.
+
+---
+
+## Tabla de Prompts y Criterio Técnico
+
+| Prompt que escribí | Qué respondió Gemini | Qué cambié o descarté | Por qué (Criterio Técnico) |
+|---|---|---|---|
+| *«¿Cómo implementar un filtro por categoría (Estudio, Comida, Eventos, Servicios) usando FilterChips de Material 3 en CampusGPS con Compose y MVVM?»* | Sugirió guardar la categoría seleccionada en un ememberSaveable dentro del Composable PantallaMapa y filtrar la lista lugares.filter { ... } directamente dentro de la función composable antes de pasarla a ListaLugares. | **Descarté el filtrado en la UI**. Moví el estado categoriaSeleccionada al MapaViewModel como MutableStateFlow<String?> y creé el flujo reactivo derivado lugaresFiltrados combinando _lugares y _categoriaSeleccionada con combine. La UI únicamente emite el evento seleccionarCategoria y recolecta el estado con collectAsState(). | Realizar operaciones de filtrado en el Composable viola la regla de oro de MVVM y degrada el rendimiento por recomposiciones innecesarias. El ViewModel debe ser la única fuente de verdad (*Single Source of Truth*) del estado filtrado. |
+| *«Quiero agregar un selector de radio de cercanía (100m, 200m, 500m) que dibuje una circunferencia en el mapa y marque los lugares dentro del radio en la lista. ¿Cómo implementarlo con OpenStreetMap / osmdroid?»* | Propuso instanciar un nuevo MapView cada vez que el radio cambia o recalcular las distancias usando Location.distanceBetween dentro del Composable de la tarjeta ItemCard con el Context actual. | **Descarté calcular distancias en la tarjeta y recrear el MapView**. Aproveché el cálculo de distancias en metros que ya realiza MapaViewModel.actualizarDistancias en LugarConDistancia.metros. En MapaViewModel expuse adioCercania: StateFlow<Float?> y seleccionarRadio(). En MapaUbicacion dibujé el círculo reactivo usando Polygon.pointsAsCircle(userPos, radio.toDouble()) de osmdroid con relleno semitransparente (rgb(45, 21, 101, 192)), y en ListaLugares solo comparé item.metros <= radio para renderizar el badge accesible *"En radio"*. | La distancia ya está calculada de forma pura en el ViewModel. Recalcularla en cada tarjeta con Context provocaría tirones visuales (*jank*), recomposiciones pesadas y acoplaría la UI a las APIs del sistema operativo. |
+| *«¿Cómo activar controles de zoom táctil en pantalla y barra de escala en OpenStreetMap osmdroid integrándolo en Jetpack Compose?»* | Sugirió crear botones flotantes independientes (FloatingActionButton) en Compose que invoquen manualmente funciones de zoom del controlador. | **Aproveché las capacidades nativas de osmdroid para máxima fluidez y accesibilidad**. En MapaUbicacion configuré zoomController.setVisibility(CustomZoomButtonsController.Visibility.ALWAYS) y agregué el overlay nativo ScaleBarOverlay con offset ergonómico, permitiendo al usuario apreciar la escala real de las distancias en metros del campus sin saturar la jerarquía de Compose. | Delegar el renderizado de la escala y los controles de zoom al motor de osmdroid optimiza los ciclos de recomposición de Compose, garantizando que el mapa se actualice a 60 FPS sin recomponer la vista principal. |
+
+---
+
+## 🛡️ Principios Arquitectónicos Mantenidos en la Fase 2
+
+1. **Inmutabilidad del Estado:** La interfaz de usuario nunca modifica directamente los datos; todas las mutaciones ocurren mediante funciones explícitas en MapaViewModel (seleccionarCategoria, seleccionarRadio).
+2. **Cero Context en ViewModel:** El ViewModel sigue siendo 100% independiente del framework de Android y puede someterse a pruebas unitarias puras.
+3. **Cartografía 100% Libre y Gratuita:** Al usar OpenStreetMap (osmdroid), no se requieren tarjetas de crédito, claves de API privadas en local.properties ni facturación en la nube, garantizando que el mapa siempre cargue sus teselas en cualquier dispositivo evaluador.
+4. **Pintado Reactivo:** Todos los filtros, polígonos circulares y listas se actualizan fluidamente mediante StateFlow y recomposición selectiva sin bloquear el hilo principal (*Main Thread*).
