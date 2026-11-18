@@ -21,6 +21,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -29,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -176,30 +178,36 @@ fun PantallaMapa(
                         )
                     }
 
-                    // Mejora 1: Chips de filtro por categoría
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp, vertical = 2.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    // Mejora 1: Chips de filtro por categoría con fondo blanco permanente
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.White
                     ) {
-                        vm.categorias.forEach { cat ->
-                            val seleccionadoActual = if (cat == "Todas") {
-                                categoriaSeleccionada == null
-                            } else {
-                                categoriaSeleccionada.equals(cat, ignoreCase = true)
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            vm.categorias.forEach { cat ->
+                                val seleccionadoActual = if (cat == "Todas") {
+                                    categoriaSeleccionada == null
+                                } else {
+                                    categoriaSeleccionada.equals(cat, ignoreCase = true)
+                                }
 
-                            FilterChip(
-                                selected = seleccionadoActual,
-                                onClick = { vm.seleccionarCategoria(cat) },
-                                label = { Text(cat, fontSize = 12.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                FilterChip(
+                                    selected = seleccionadoActual,
+                                    onClick = { vm.seleccionarCategoria(cat) },
+                                    label = { Text(cat, fontSize = 12.sp) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = Color.White,
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
 
