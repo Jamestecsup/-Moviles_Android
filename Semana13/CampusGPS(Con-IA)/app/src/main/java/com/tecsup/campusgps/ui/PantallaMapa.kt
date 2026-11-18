@@ -1,18 +1,23 @@
-package com.tecsup.campusgps.ui
+﻿package com.tecsup.campusgps.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -40,9 +45,10 @@ fun PantallaMapa(
     modifier: Modifier = Modifier
 ) {
     val estado by vm.estado.collectAsState()
-    val lugares by vm.lugares.collectAsState()
+    val lugares by vm.lugaresFiltrados.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
+    val categoriaSeleccionada by vm.categoriaSeleccionada.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -56,17 +62,17 @@ fun PantallaMapa(
         }
     }
 
+    val finePermiso = ContextCompat.checkSelfPermission(
+        contexto,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    val coarsePermiso = ContextCompat.checkSelfPermission(
+        contexto,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
     fun alPulsar() {
-        val finePermiso = ContextCompat.checkSelfPermission(
-            contexto,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val coarsePermiso = ContextCompat.checkSelfPermission(
-            contexto,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
         if (finePermiso || coarsePermiso) {
             vm.buscar()
         } else {
@@ -134,7 +140,7 @@ fun PantallaMapa(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .padding(vertical = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -149,7 +155,7 @@ fun PantallaMapa(
                     }
 
                     if (masCercano != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
 
                         OutlinedButton(
                             onClick = { masCercano?.let { vm.seleccionar(it.id) } },
@@ -159,22 +165,49 @@ fun PantallaMapa(
                         }
 
                         val distanciaCercano = lugares.find { it.lugar.id == masCercano?.id }?.metros
-                        val textoDistancia = distanciaCercano?.let { " (${formatearDistancia(it)})" } ?: ""
+                        val textoDistancia = distanciaCercano?.let { " ()" } ?: ""
                         Text(
-                            text = "Más cercano: ${masCercano?.nombre}$textoDistancia",
+                            text = "Más cercano: ",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                            modifier = Modifier.padding(vertical = 2.dp)
                         )
+                    }
+
+                    // Mejora 1: Chips de filtro por categoría
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        vm.categorias.forEach { cat ->
+                            val seleccionadoActual = if (cat == "Todas") {
+                                categoriaSeleccionada == null
+                            } else {
+                                categoriaSeleccionada.equals(cat, ignoreCase = true)
+                            }
+
+                            FilterChip(
+                                selected = seleccionadoActual,
+                                onClick = { vm.seleccionarCategoria(cat) },
+                                label = { Text(cat, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
                     }
 
                     when (val actual = estado) {
                         is UbicacionUi.Inicial -> {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text("Pulsa el botón para empezar")
                         }
                         is UbicacionUi.Buscando -> {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text("Obteniendo ubicación...")
                         }
                         is UbicacionUi.Lista -> {
@@ -185,11 +218,11 @@ fun PantallaMapa(
                                 masCercanoId = masCercano?.id,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(220.dp)
+                                    .height(200.dp)
                             )
                         }
                         is UbicacionUi.Error -> {
-                            // Handled above
+                            // Manejado arriba
                         }
                     }
                 }
