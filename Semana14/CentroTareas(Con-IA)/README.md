@@ -1,6 +1,8 @@
-# CentroTareas: que la pantalla nunca se congele ⚡
+# CentroTareas: que la pantalla nunca se congele ⚡ (Con IA - Fase 2)
 
-**CentroTareas** es una aplicación Android nativa desarrollada en **Kotlin** con **Jetpack Compose** y **Material 3 (100% sin XML)**, estructurada bajo el patrón **MVVM + Repository** y potenciada por **Corrutinas de Kotlin** y **StateFlow**. Su propósito fundamental es demostrar y aplicar las mejores prácticas para la ejecución de tareas asíncronas y cálculos intensivos en segundo plano, garantizando que el hilo principal (*Main Thread* / *UI Thread*) permanezca siempre libre y fluido para atender las interacciones del usuario sin congelamientos ni bloqueos de interfaz.
+**CentroTareas** es una aplicación Android nativa desarrollada en **Kotlin** con **Jetpack Compose** y **Material 3 (100% sin XML)**, estructurada bajo el patrón **MVVM + Repository** y potenciada por **Corrutinas de Kotlin**, **StateFlow** y **Flow reactivo**. 
+
+En esta **Fase 2 (Con IA)**, la aplicación se refactorizó e incrementó con 3 mejoras de nivel profesional para llevar la resiliencia, el rendimiento computacional y la arquitectura reactiva al estándar recomendado por Android Architecture Guidelines.
 
 ---
 
@@ -9,45 +11,79 @@
 * **Lenguaje:** Kotlin 2.4.21 (JVM 17)
 * **UI Framework:** Jetpack Compose con Material 3 y Compose BOM
 * **Arquitectura:** MVVM (Model-View-ViewModel) + Repository Pattern (Clean Architecture)
-* **Concurrencia:** Kotlin Coroutines (`launch`, `async`, `await`, `withContext`, `coroutineScope`)
-* **Gestión de Ciclo de Vida y Estado:** `viewModelScope`, `StateFlow`, `collectAsState()`
-* **Despachadores:** `Dispatchers.Main` (UI) y `Dispatchers.Default` (CPU-bound & Delays)
+* **Concurrencia Reactiva:** Kotlin Coroutines (`launch`, `async`, `await`, `withContext`, `coroutineScope`, `withTimeout`)
+* **Flujos Asíncronos:** Kotlin `Flow`, `flowOn(Dispatchers.Default)` y `StateFlow`
+* **Gestión de Ciclo de Vida y Estado:** `viewModelScope`, `collectAsState()`
+* **Despachadores:** `Dispatchers.Main` (UI) y `Dispatchers.Default` (CPU-bound & Cómputo pesado)
 
 ---
 
-## 🏛️ Arquitectura MVVM + Repository
+## 🚀 Mejoras Implementadas en la Fase 2 (Con IA)
+
+### 1. Desacoplamiento de Progreso en el Repository con Kotlin `Flow`
+* **En Sin-IA:** El ViewModel calculaba e iteraba el progreso de la tarea larga directamente en su corrutina local con un bucle `for` y `delay`.
+* **En Con-IA:** Se delegó la emisión del progreso al repositorio mediante una corriente fría (`cold stream`): `ejecutarTareaConProgreso(): Flow<Float> = flow { ... }.flowOn(Dispatchers.Default)`.
+* **Beneficio Arquitectónico:** Desacopla la lógica de datos y simulación fuera del ViewModel. El operador `flowOn(Dispatchers.Default)` garantiza que la emisión se ejecute en un hilo secundario y la recolección en el ViewModel actualice limpiamente `_progreso.value` y `_mensaje.value` en el hilo principal.
+
+### 2. Cálculo de Primos con Reporte de Progreso Porcentual en Tiempo Real
+* **En Sin-IA:** El cálculo de números primos para $N = 500,000$ mostraba un indicador circular indeterminado sin métricas de avance hasta finalizar.
+* **En Con-IA:** Se diseñó el algoritmo `contarPrimosConProgreso(hasta: Int, onProgreso: (Float) -> Unit)` con cuantización porcentual (`paso = maxOf(1, hasta / 100)`). La UI ahora presenta una barra de progreso lineal reactiva (`LinearProgressIndicator`) y el porcentaje numérico en tiempo real (0% a 100%).
+* **Beneficio de Rendimiento:** Al emitir actualizaciones únicamente en saltos de 1% (100 eventos en lugar de 500,000), se evita saturar el hilo principal con recomposiciones innecesarias, logrando máxima velocidad computacional y animaciones a 60 FPS sin tirones (*jank*), preservando además la cancelación instantánea con `ensureActive()`.
+
+### 3. Reintento Automático con Backoff Progresivo y Control de Tiempo Máximo (`withTimeout`)
+* **En Sin-IA:** La carga paralela con `async` no tenía tiempo límite (si el servicio colgaba, la pantalla quedaba cargando indefinidamente) y el reintento era exclusivamente manual.
+* **En Con-IA:** 
+  1. Se introdujo `withTimeout(4000L)` en `cargarALaVez()` y en la nueva función `cargarConReintentoAutomatico()`, cancelando cooperativamente el árbol de corrutinas si la operación excede los 4 segundos con mensaje de timeout amigable.
+  2. Se agregó la función `cargarConReintentoAutomatico(intentosMaximos = 3)` con backoff progresivo no bloqueante (`delay(intento * 600L)`), acompañada del botón **"Reintento 3x"** y la opción de reintentar con backoff ante cualquier fallo o timeout.
+* **Beneficio de Resiliencia:** Tolerancia automática ante fallos transitorios de red o servicios lentos, garantizando que ninguna corrutina quede huérfana en segundo plano.
+
+---
+
+## 📊 Comparativa Arquitectónica: Sin-IA vs Con-IA
+
+| Característica | Fase 1 (Sin-IA) | Fase 2 (Con-IA) |
+|---|---|---|
+| **Fuente de Progreso** | Generado en el ViewModel con bucle local | Emitido por el `Repository` con `Flow<Float>` y `flowOn` |
+| **Cálculo de Primos** | `CircularProgressIndicator` indeterminado | `LinearProgressIndicator` con porcentaje real (0% - 100%) por muestreo discreto |
+| **Peticiones Concurrentes** | `async` / `await` sin tiempo máximo | `withTimeout(4000L)` evitando bloqueos indefinidos |
+| **Mecanismo de Reintento** | Manual con botón estático | Automático hasta 3 intentos con backoff progresivo (`delay(n * 600)`) y manual |
+| **Manejo de Cancelación** | `Job.cancel()` y `ensureActive()` | Preservado íntegramente; siempre relanza `CancellationException` |
+| **Frameworks y Dependencias** | Jetpack Compose + Corrutinas estándar | Jetpack Compose + Corrutinas + Flow reactivo |
+
+---
+
+## 🏛️ Arquitectura MVVM + Repository (Con-IA)
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │                               VIEW (UI)                                │
 │  PantallaTareas.kt (Tarjetas Compose, Scaffold, TopAppBar, Buttons)   │
+│  - LinearProgressIndicator reactivo para tarea y para cálculo de primos│
+│  - Botones "Una por una", "A la vez" y "Reintento 3x"                  │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Eventos de usuario (onClick, toques, filtros)
+                                    │ Eventos de usuario (onClick, toques)
                                     │ Observa flujos StateFlow con collectAsState()
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                              VIEWMODEL                                 │
 │  TareasViewModel.kt                                                    │
-│  - mensaje: StateFlow<String>                                          │
-│  - progreso: StateFlow<Float>                                          │
-│  - corriendo: StateFlow<Boolean>                                       │
-│  - primos: StateFlow<PrimosUi>                                         │
-│  - carga: StateFlow<CargaUi>                                           │
-│  - simularError: StateFlow<Boolean>                                    │
+│  - progreso / progresoPrimos: StateFlow<Float>                         │
+│  - primos: StateFlow<PrimosUi> (Calculando, Exito, Cancelado)          │
+│  - carga: StateFlow<CargaUi> (Cargando, Exito, Error)                  │
+│  - Gestiona viewModelScope, withTimeout y recolección de Flow          │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Invoca operaciones asíncronas suspend
+                                    │ Invoca funciones suspend y recolecta Flow<Float>
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                             REPOSITORY                                 │
 │  TareasRepository (Interface)                                          │
-│    └── TareasRepositoryLocal (Cálculo de Primos & Cargas Simuladas)    │
+│    └── TareasRepositoryLocal                                           │
+│        ├── ejecutarTareaConProgreso(): Flow<Float>                     │
+│        ├── contarPrimosConProgreso(hasta, onProgreso)                  │
+│        ├── cargarPerfil(): String (2000 ms)                            │
+│        └── cargarPedidos(simularError): List<String> (3000 ms)         │
 └────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Reglas de Responsabilidad por Capa:
-* **View (`ui/`):** Conoce únicamente a su `ViewModel`. No lanza corrutinas directamente ni bloquea hilos; se limita a renderizar el estado inmutable y reportar eventos.
-* **ViewModel (`viewmodel/`):** Conoce únicamente la interfaz del `Repository`. No conoce clases de UI ni contiene objetos `Context`. Administra `viewModelScope` y expone estados reactivos con `StateFlow`.
-* **Repository (`data/`):** Desacoplado de la interfaz de usuario. Sus funciones `suspend` delegan el trabajo intensivo a despachadores de segundo plano (`Dispatchers.Default`) y respetan la cancelación cooperativa con `ensureActive()`.
 
 ---
 
@@ -59,10 +95,10 @@ com.tecsup.centrotareas/
 ├── model/
 │   └── Estados.kt                       # Sealed interfaces: PrimosUi y CargaUi
 ├── data/
-│   ├── TareasRepository.kt              # Interface de abstracción de datos y tareas
-│   └── TareasRepositoryLocal.kt         # Implementación local con cálculo de primos y cargas simuladas
+│   ├── TareasRepository.kt              # Interface de abstracción con Flow y callbacks de progreso
+│   └── TareasRepositoryLocal.kt         # Implementación local con Flow, flowOn y optimizaciones
 ├── viewmodel/
-│   ├── TareasViewModel.kt               # Lógica de negocio, gestión de Job y corrutinas
+│   ├── TareasViewModel.kt               # Lógica de negocio, withTimeout, backoff y recolección de Flow
 │   └── TareasViewModelFactory.kt        # Fábrica desacoplada para instanciación del ViewModel
 └── ui/
     ├── PantallaTareas.kt                # UI principal con 3 tarjetas funcionales y botón de prueba de vida
@@ -89,29 +125,29 @@ El sistema operativo Android cuenta con un vigilante (*Watchdog*) en el hilo pri
 
 ## 📱 Capturas de Pantalla de la Aplicación
 
-| 1. Tarea con Progreso (62%) | 2. Tarea Cancelada (40%) | 3. Cálculo de Primos |
+| 1. Tarea con Progreso (62%) | 2. Tarea Cancelada (40%) | 3. Cálculo de Primos con Progreso |
 |:---:|:---:|:---:|
 | ![Progreso](docs/screenshots/01-progreso.png) | ![Cancelado](docs/screenshots/02-cancelado.png) | ![Primos](docs/screenshots/03-primos.png) |
 
-| 4. Dos Cargas a la Vez (async) | 5. Simulación de Error y Reintento |
+| 4. Dos Cargas a la Vez (async) | 5. Simulación de Error y Reintento 3x |
 |:---:|:---:|
 | ![Cargas](docs/screenshots/04-cargas-async.png) | ![Error](docs/screenshots/05-error-reintento.png) |
 
 ---
 
-## ✅ Lista de Verificación y Pruebas de Aceptación (Fase 1)
+## ✅ Lista de Verificación y Pruebas de Aceptación (Fase 2)
 
+- [x] **Progreso emitido por Repository (Mejora 1):** La emisión de avance de la tarea larga proviene de `Flow<Float>` en `TareasRepositoryLocal` ejecutándose con `flowOn(Dispatchers.Default)`.
+- [x] **Cálculo de primos con barra de progreso en vivo (Mejora 2):** Al calcular primos con $N = 500,000$, la barra de progreso avanza suavemente de 0% a 100% reflejando el cómputo real y permitiendo pulsar «Tócame» sin congelamiento visual.
+- [x] **Reintento con backoff y tiempo límite (Mejora 3):** Con el botón «Reintento 3x» o «Reintentar con backoff», la app gestiona hasta 3 intentos sucesivos con pausas crecientes no bloqueantes y cancela si alguna llamada excede 4 segundos vía `withTimeout`.
 - [x] **Tarea larga sin bloqueo:** Al ejecutar la tarea con progreso, pulsar el botón «Tócame» continúa sumando los toques en tiempo real sin interrupciones.
-- [x] **Inspección en Logcat (filtro HILO):** Se evidencia en consola `Antes: main`, `Dentro: DefaultDispatcher-worker-...` y `Despues: main`.
-- [x] **Barra de progreso reactiva:** La barra de progreso avanza suavemente de 0 a 100 % en aproximadamente 4 segundos.
 - [x] **Cancelación con Job:** Al pulsar «Cancelar» a la mitad del proceso, la barra se detiene en su posición actual, el texto indica «Cancelado» y el botón «Iniciar» vuelve a habilitarse.
 - [x] **Protección contra doble inicio:** Mientras la tarea se encuentra corriendo, el botón «Iniciar» permanece inhabilitado, impidiendo lanzamientos concurrentes no deseados.
 - [x] **Cálculo de números primos:** Con N = 1000 devuelve 168 primos; con N = 500 000 devuelve 41 538 primos comprobados.
-- [x] **Cancelación de cálculo intensivo:** Al calcular primos con N grande, la pantalla no se congela y pulsar «Cancelar» detiene la computación gracias a `ensureActive()`.
-- [x] **Carga secuencial («Una por una»):** Ejecuta la carga de perfil (2 s) y pedidos (3 s) en serie, completando en aproximadamente 5000 ms.
-- [x] **Carga paralela («A la vez» con `async`):** Ejecuta ambas peticiones concurrentemente con `async` y `await()`, completando en aproximadamente 3000 ms (el tiempo de la tarea más lenta).
-- [x] **Manejo de errores y reintento:** Al activar el interruptor «Simular error», la carga captura la excepción, muestra el contenedor rojo con el mensaje de error y el botón «Reintentar» permite reanudarla exitosamente tras desactivar el interruptor.
-- [x] **Sobrevivencia a rotación de pantalla:** Al girar el dispositivo mientras una tarea está en curso, el `ViewModel` preserva el estado, la tarea continúa y no se reinicia el progreso.
+- [x] **Cancelación de cálculo intensivo:** Al calcular primos con N grande, pulsar «Cancelar» detiene la computación gracias a `ensureActive()`.
+- [x] **Carga secuencial («Una por una»):** Completa en aproximadamente 5000 ms.
+- [x] **Carga paralela («A la vez» con `async`):** Completa en aproximadamente 3000 ms (`max(2s, 3s)`).
+- [x] **Sobrevivencia a rotación de pantalla:** Al girar el dispositivo, el `ViewModel` preserva el estado, la tarea continúa y no se reinicia el progreso.
 - [x] **Auditoría de código limpio:** El comando `git grep` confirma que en el código final no existen instancias de `GlobalScope`, `runBlocking` ni `Thread.sleep`.
 
 ---
