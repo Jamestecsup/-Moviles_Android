@@ -1,4 +1,4 @@
-﻿package com.tecsup.centrotareas.ui
+package com.tecsup.centrotareas.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.tecsup.centrotareas.model.CargaUi
 import com.tecsup.centrotareas.model.PrimosUi
 import com.tecsup.centrotareas.ui.theme.AzulPrincipal
+import com.tecsup.centrotareas.ui.theme.RojoContenedor
 import com.tecsup.centrotareas.ui.theme.RojoError
 import com.tecsup.centrotareas.ui.theme.VerdeContenedor
 import com.tecsup.centrotareas.ui.theme.VerdeExito
@@ -62,6 +64,7 @@ fun PantallaTareas(
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
     val carga by vm.carga.collectAsState()
+    val simularError by vm.simularError.collectAsState()
 
     var toques by rememberSaveable { mutableIntStateOf(0) }
     var textoPrimos by rememberSaveable { mutableStateOf("500000") }
@@ -108,7 +111,10 @@ fun PantallaTareas(
                         modifier = Modifier.align(Alignment.Start)
                     )
 
-                    Button(onClick = { toques++ }) {
+                    Button(
+                        onClick = { toques++ },
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
                         Text("Tócame: $toques")
                     }
 
@@ -272,6 +278,19 @@ fun PantallaTareas(
                         modifier = Modifier.align(Alignment.Start)
                     )
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Switch(
+                            checked = simularError,
+                            onCheckedChange = { vm.cambiarSimularError(it) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Simular error", fontSize = 14.sp)
+                    }
+
                     val cargando = carga is CargaUi.Cargando
 
                     Row(
@@ -337,7 +356,27 @@ fun PantallaTareas(
                             }
                         }
                         is CargaUi.Error -> {
-                            // En paso 7
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(RojoContenedor)
+                                    .padding(12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = actual.mensaje,
+                                    color = RojoError,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
+                                )
+                            }
+
+                            OutlinedButton(
+                                onClick = { vm.reintentarCarga() }
+                            ) {
+                                Text("Reintentar")
+                            }
                         }
                     }
                 }

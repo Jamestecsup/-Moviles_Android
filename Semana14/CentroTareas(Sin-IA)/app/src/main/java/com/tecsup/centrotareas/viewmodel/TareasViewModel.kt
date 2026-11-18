@@ -1,4 +1,4 @@
-﻿package com.tecsup.centrotareas.viewmodel
+package com.tecsup.centrotareas.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
+
     // ----- Tarea con progreso (pasos 1 a 4) -----
     private val _mensaje = MutableStateFlow("Listo")
     val mensaje: StateFlow<String> = _mensaje.asStateFlow()
@@ -101,16 +102,29 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
 
+    private val _simularError = MutableStateFlow(false)
+    val simularError: StateFlow<Boolean> = _simularError.asStateFlow()
+
+    fun cambiarSimularError(valor: Boolean) {
+        _simularError.value = valor
+    }
+
     fun cargarUnaPorUna() {
         if (_carga.value is CargaUi.Cargando) return
 
         _carga.value = CargaUi.Cargando
         viewModelScope.launch {
-            val inicio = System.currentTimeMillis()
-            val perfil = repo.cargarPerfil()
-            val pedidos = repo.cargarPedidos(false)
-            val ms = System.currentTimeMillis() - inicio
-            _carga.value = CargaUi.Exito("Una por una", perfil, pedidos.size, ms)
+            try {
+                val inicio = System.currentTimeMillis()
+                val perfil = repo.cargarPerfil()
+                val pedidos = repo.cargarPedidos(_simularError.value)
+                val ms = System.currentTimeMillis() - inicio
+                _carga.value = CargaUi.Exito("Una por una", perfil, pedidos.size, ms)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _carga.value = CargaUi.Error("No se pudo cargar: ${e.message ?: "Sin conexión"}")
+            }
         }
     }
 
@@ -119,14 +133,24 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
         _carga.value = CargaUi.Cargando
         viewModelScope.launch {
-            val inicio = System.currentTimeMillis()
-            val (perfil, pedidos) = coroutineScope {
-                val p = async { repo.cargarPerfil() }
-                val o = async { repo.cargarPedidos(false) }
-                Pair(p.await(), o.await())
+            try {
+                val inicio = System.currentTimeMillis()
+                val (perfil, pedidos) = coroutineScope {
+                    val p = async { repo.cargarPerfil() }
+                    val o = async { repo.cargarPedidos(_simularError.value) }
+                    Pair(p.await(), o.await())
+                }
+                val ms = System.currentTimeMillis() - inicio
+                _carga.value = CargaUi.Exito("A la vez", perfil, pedidos.size, ms)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _carga.value = CargaUi.Error("No se pudo cargar: ${e.message ?: "Sin conexión"}")
             }
-            val ms = System.currentTimeMillis() - inicio
-            _carga.value = CargaUi.Exito("A la vez", perfil, pedidos.size, ms)
         }
+    }
+
+    fun reintentarCarga() {
+        cargarALaVez()
     }
 }
