@@ -1,4 +1,4 @@
-﻿package com.tecsup.campusgps
+package com.tecsup.campusgps
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,10 +9,12 @@ import com.tecsup.campusgps.ui.PantallaMapa
 import com.tecsup.campusgps.ui.theme.CampusGPSTheme
 import com.tecsup.campusgps.viewmodel.CampusViewModelFactory
 import com.tecsup.campusgps.viewmodel.MapaViewModel
+import org.osmdroid.config.Configuration
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Configuration.getInstance().userAgentValue = packageName
         enableEdgeToEdge()
         setContent {
             CampusGPSTheme {
