@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tecsup.centrotareas.model.CargaUi
 import com.tecsup.centrotareas.model.PrimosUi
 import com.tecsup.centrotareas.ui.theme.AzulPrincipal
 import com.tecsup.centrotareas.ui.theme.RojoError
@@ -60,6 +61,7 @@ fun PantallaTareas(
     val progreso by vm.progreso.collectAsState()
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
+    val carga by vm.carga.collectAsState()
 
     var toques by rememberSaveable { mutableIntStateOf(0) }
     var textoPrimos by rememberSaveable { mutableStateOf("500000") }
@@ -243,6 +245,99 @@ fun PantallaTareas(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+            }
+
+            // TARJETA 3: Dos cargas
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Dos cargas",
+                        color = AzulPrincipal,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+
+                    val cargando = carga is CargaUi.Cargando
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        OutlinedButton(
+                            onClick = { vm.cargarUnaPorUna() },
+                            enabled = !cargando
+                        ) {
+                            Text("Una por una")
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { vm.cargarALaVez() },
+                            enabled = !cargando
+                        ) {
+                            Text("A la vez")
+                        }
+                    }
+
+                    when (val actual = carga) {
+                        is CargaUi.Inicial -> {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFF0F4F8))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "«Una por una» tarda ≈ 5000 ms · «A la vez» tarda ≈ 3000 ms",
+                                    fontSize = 11.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                        is CargaUi.Cargando -> {
+                            CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+                        }
+                        is CargaUi.Exito -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(VerdeContenedor)
+                                    .padding(12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "Modo: ${actual.modo}",
+                                        fontWeight = FontWeight.Bold,
+                                        color = VerdeExito,
+                                        fontSize = 15.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text("Perfil: ${actual.perfil}", color = VerdeExito, fontSize = 13.sp)
+                                    Text("Pedidos: ${actual.pedidos}", color = VerdeExito, fontSize = 13.sp)
+                                    Text("Tiempo: ${actual.milisegundos} ms", color = VerdeExito, fontSize = 13.sp)
+                                }
+                            }
+                        }
+                        is CargaUi.Error -> {
+                            // En paso 7
                         }
                     }
                 }
