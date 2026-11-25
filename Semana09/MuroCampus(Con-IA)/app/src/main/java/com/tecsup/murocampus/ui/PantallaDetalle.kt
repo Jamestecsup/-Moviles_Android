@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -67,8 +69,12 @@ fun PantallaDetalle(
 
     val estado by viewModel.detalle.collectAsStateWithLifecycle()
     val estadoEliminar by viewModel.eliminarEstado.collectAsStateWithLifecycle()
+    val estadoEditar by viewModel.editarEstado.collectAsStateWithLifecycle()
 
     var mostrarDialogoEliminar by remember { mutableStateOf(false) }
+    var mostrarDialogoEditar by remember { mutableStateOf(false) }
+    var textoEditar by remember { mutableStateOf("") }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -81,6 +87,59 @@ fun PantallaDetalle(
         }
     }
 
+    LaunchedEffect(estadoEditar) {
+        if (estadoEditar is UiState.Error) {
+            val mensaje = (estadoEditar as UiState.Error).mensaje
+            scope.launch {
+                snackbarHostState.showSnackbar(mensaje)
+            }
+        } else if (estadoEditar is UiState.Exito) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Título actualizado con éxito")
+            }
+            viewModel.limpiarEditarEstado()
+        }
+    }
+
+    // Diálogo para Editar Título con PATCH
+    if (mostrarDialogoEditar) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoEditar = false },
+            title = { Text("Editar título de la publicación") },
+            text = {
+                Column {
+                    Text("Ingresa el nuevo título para enviar vía PATCH al servidor:")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = textoEditar,
+                        onValueChange = { textoEditar = it },
+                        label = { Text("Título") },
+                        singleLine = false,
+                        maxLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoEditar = false
+                        viewModel.editar(id, textoEditar) {}
+                    },
+                    enabled = textoEditar.isNotBlank() && estadoEditar !is UiState.Cargando
+                ) {
+                    Text("Guardar cambios")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { mostrarDialogoEditar = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Diálogo para Eliminar Publicación con DELETE
     if (mostrarDialogoEliminar) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoEliminar = false },
@@ -125,13 +184,39 @@ fun PantallaDetalle(
                 },
                 actions = {
                     if (estado is UiState.Exito) {
+                        val postActual = (estado as UiState.Exito).datos.post
+
+                        // Botón de Editar con PATCH
+                        IconButton(
+                            onClick = {
+                                textoEditar = postActual.title
+                                mostrarDialogoEditar = true
+                            },
+                            enabled = estadoEditar !is UiState.Cargando
+                        ) {
+                            if (estadoEditar is UiState.Cargando) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar título",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+
+                        // Botón de Eliminar con DELETE
                         IconButton(
                             onClick = { mostrarDialogoEliminar = true },
                             enabled = estadoEliminar !is UiState.Cargando
                         ) {
                             if (estadoEliminar is UiState.Cargando) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(18.dp),
                                     color = Color.White,
                                     strokeWidth = 2.dp
                                 )

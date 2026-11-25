@@ -2,6 +2,7 @@ package com.tecsup.murocampus.data
 
 import com.tecsup.murocampus.data.remote.PostApi
 import com.tecsup.murocampus.model.Comentario
+import com.tecsup.murocampus.model.EditarPost
 import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
 import kotlin.coroutines.cancellation.CancellationException
@@ -14,6 +15,7 @@ interface PostRepository {
     suspend fun porUsuario(userId: Int): Result<List<Post>>
     suspend fun crear(nuevo: NuevoPost): Result<Post>
     suspend fun eliminar(id: Int): Result<Unit>
+    suspend fun editar(id: Int, nuevoTitulo: String): Result<Post>
 }
 
 class PostRepositoryRemote(
@@ -59,5 +61,9 @@ class PostRepositoryRemote(
         throw e
     } catch (e: Exception) {
         Result.failure(e)
+    }
+
+    override suspend fun editar(id: Int, nuevoTitulo: String): Result<Post> = llamar {
+        api.editar(id, EditarPost(title = nuevoTitulo))
     }
 }

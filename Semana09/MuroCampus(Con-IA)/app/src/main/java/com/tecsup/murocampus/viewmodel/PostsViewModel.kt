@@ -64,6 +64,9 @@ class PostsViewModel(
     private val _eliminarEstado = MutableStateFlow<UiState<Unit>?>(null)
     val eliminarEstado: StateFlow<UiState<Unit>?> = _eliminarEstado.asStateFlow()
 
+    private val _editarEstado = MutableStateFlow<UiState<Post>?>(null)
+    val editarEstado: StateFlow<UiState<Post>?> = _editarEstado.asStateFlow()
+
     init {
         cargar()
     }
@@ -170,5 +173,42 @@ class PostsViewModel(
 
     fun limpiarEliminarEstado() {
         _eliminarEstado.value = null
+    }
+
+    fun editar(id: Int, nuevoTitulo: String, onExito: () -> Unit) {
+        if (nuevoTitulo.isBlank()) return
+        viewModelScope.launch {
+            _editarEstado.value = UiState.Cargando
+            repo.editar(id, nuevoTitulo.trim())
+                .onSuccess { postActualizado ->
+                    _editarEstado.value = UiState.Exito(postActualizado)
+                    // Actualizar el detalle actual si está abierto
+                    val detalleActual = _detalle.value
+                    if (detalleActual is UiState.Exito && detalleActual.datos.post.id == id) {
+                        _detalle.value = UiState.Exito(
+                            detalleActual.datos.copy(
+                                post = detalleActual.datos.post.copy(title = postActualizado.title)
+                            )
+                        )
+                    }
+                    // Actualizar en la lista en memoria
+                    val listaActual = _lista.value
+                    if (listaActual is UiState.Exito) {
+                        _lista.value = UiState.Exito(
+                            listaActual.datos.map {
+                                if (it.id == id) it.copy(title = postActualizado.title) else it
+                            }
+                        )
+                    }
+                    onExito()
+                }
+                .onFailure { error ->
+                    _editarEstado.value = UiState.Error(mensajeDe(error))
+                }
+        }
+    }
+
+    fun limpiarEditarEstado() {
+        _editarEstado.value = null
     }
 }
