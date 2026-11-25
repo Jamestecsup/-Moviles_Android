@@ -34,6 +34,9 @@ class PostsViewModel(
     private val _crearEstado = MutableStateFlow<UiState<Post>?>(null)
     val crearEstado: StateFlow<UiState<Post>?> = _crearEstado.asStateFlow()
 
+    private val _eliminarEstado = MutableStateFlow<UiState<Unit>?>(null)
+    val eliminarEstado: StateFlow<UiState<Unit>?> = _eliminarEstado.asStateFlow()
+
     init {
         cargar()
     }
@@ -113,5 +116,28 @@ class PostsViewModel(
 
     fun limpiarCrearEstado() {
         _crearEstado.value = null
+    }
+
+    fun eliminar(id: Int, onExito: () -> Unit) {
+        viewModelScope.launch {
+            _eliminarEstado.value = UiState.Cargando
+            repo.eliminar(id)
+                .onSuccess {
+                    _eliminarEstado.value = UiState.Exito(Unit)
+                    // Eliminar la publicación en memoria local
+                    val estadoActual = _lista.value
+                    if (estadoActual is UiState.Exito) {
+                        _lista.value = UiState.Exito(estadoActual.datos.filter { it.id != id })
+                    }
+                    onExito()
+                }
+                .onFailure { error ->
+                    _eliminarEstado.value = UiState.Error(mensajeDe(error))
+                }
+        }
+    }
+
+    fun limpiarEliminarEstado() {
+        _eliminarEstado.value = null
     }
 }
