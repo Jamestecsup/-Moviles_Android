@@ -2,10 +2,11 @@
 
 MuroCampus es una aplicación Android profesional desarrollada con **Jetpack Compose**, **Retrofit**, **OkHttp**, **Kotlin Coroutines / Flow** y **Kotlinx Serialization** siguiendo la arquitectura **MVVM + Repository**. 
 
-En esta **Fase 2 (Con IA)**, el proyecto evoluciona incorporando **3 mejoras técnicas avanzadas** asistidas por IA y auditadas bajo estrictos criterios de arquitectura limpia:
-1. **Encabezado con Interceptor de OkHttp**: Inyección centralizada de cabeceras `Accept: application/json` y `User-Agent`.
+En esta **Fase 2 (Con IA)**, el proyecto evoluciona incorporando **4 mejoras técnicas avanzadas** asistidas por IA y auditadas bajo estrictos criterios de arquitectura limpia:
+1. **Encabezado con Interceptor de OkHttp**: Inyección centralizada de cabeceras `Accept: application/json` y `User-Agent: MuroCampus-Android-Client/1.0`.
 2. **Borrado de Publicaciones con `@DELETE`**: Petición de eliminación en la API con `Response<Unit>`, verificación de código de respuesta en el Repositorio con `Result<Unit>`, actualización de estado en el ViewModel y diálogo modal de confirmación en la UI.
 3. **Búsqueda Reactiva en Tiempo Real**: Filtrado de publicaciones descargadas en memoria en base a título y contenido mediante `combine` y `StateFlow`, integrado con barra de búsqueda con botón de limpieza en la vista.
+4. **Edición con `@PATCH` y Actualización Inmutable**: Modificación parcial del título de publicaciones mediante el método HTTP `PATCH`, con validación de entradas, diálogo interactivo y actualización bidireccional inmediata en lista y detalle.
 
 ---
 
@@ -15,7 +16,7 @@ En esta **Fase 2 (Con IA)**, el proyecto evoluciona incorporando **3 mejoras té
 flowchart TD
     subgraph UI ["Capa de Presentación (ui/)"]
         V[PantallaLista: Barra de Búsqueda + Chips + FAB]
-        VD[PantallaDetalle: Comentarios + Botón Eliminar]
+        VD[PantallaDetalle: Comentarios + Botones Editar y Eliminar]
         VC[PantallaCrear: Formulario de Publicación]
     end
 
@@ -25,22 +26,23 @@ flowchart TD
         StateDetail["StateFlow<UiState<DetalleUi>>"]
         StateCreate["StateFlow<UiState<Post>?>"]
         StateDelete["StateFlow<UiState<Unit>?>"]
+        StateEdit["StateFlow<UiState<Post>?>"]
     end
 
     subgraph DataLayer ["Capa de Datos (data/)"]
         Repo["PostRepository (Interface)"]
-        RepoImpl["PostRepositoryRemote\n(Manejo de Result y Response<Unit>)"]
+        RepoImpl["PostRepositoryRemote\n(Manejo de Result, Response y CancellationException)"]
     end
 
     subgraph NetworkLayer ["Capa de Red (data/remote/)"]
-        API["PostApi (@GET, @POST, @DELETE)"]
+        API["PostApi (@GET, @POST, @DELETE, @PATCH)"]
         Client["RetrofitClient (Header Interceptor + OkHttp)"]
         Server[("Servidor REST\nJSONPlaceholder")]
     end
 
-    UI -- "Eventos (filtrar, buscar, eliminar, publicar)" --> VM
-    VM -- "Emite estados reactivos" --> StateList & StateDetail & StateCreate & StateDelete
-    StateList & StateDetail & StateCreate & StateDelete -- "collectAsStateWithLifecycle()" --> UI
+    UI -- "Eventos (filtrar, buscar, eliminar, editar, publicar)" --> VM
+    VM -- "Emite estados reactivos" --> StateList & StateDetail & StateCreate & StateDelete & StateEdit
+    StateList & StateDetail & StateCreate & StateDelete & StateEdit -- "collectAsStateWithLifecycle()" --> UI
     VM -- "Llamadas a repositorio" --> Repo
     Repo -.-> RepoImpl
     RepoImpl -- "Llamadas Retrofit" --> API
@@ -56,20 +58,20 @@ flowchart TD
 com.tecsup.murocampus/
 ├── MainActivity.kt                     # Navegación declarativa entre LISTA, DETALLE y CREAR
 ├── model/
-│   └── Modelos.kt                      # Modelos de datos: Post, Comentario, NuevoPost, Usuario
+│   └── Modelos.kt                      # Modelos: Post, Comentario, NuevoPost, EditarPost, Usuario
 ├── data/
 │   ├── remote/
-│   │   ├── PostApi.kt                  # Interface Retrofit con GET, POST y DELETE
+│   │   ├── PostApi.kt                  # Interface Retrofit con GET, POST, DELETE y PATCH
 │   │   └── RetrofitClient.kt           # Singleton de Retrofit con Interceptor de cabeceras y Logger
 │   └── PostRepository.kt               # PostRepository y PostRepositoryRemote (Result<T> y Result<Unit>)
 ├── viewmodel/
 │   ├── UiState.kt                      # Estados sellados (Cargando, Exito, Error) y función mensajeDe
-│   ├── PostsViewModel.kt               # Gestión reactiva: listaFiltrada, detalle, filtro, crear y eliminar
+│   ├── PostsViewModel.kt               # Gestión reactiva: listaFiltrada, detalle, filtro, crear, eliminar y editar
 │   └── PostsViewModelFactory.kt        # Factory para inyectar PostRepository al ViewModel
 └── ui/
     ├── Componentes.kt                  # TarjetaPost, Cargando, ErrorConReintento
     ├── PantallaLista.kt                # Barra de búsqueda reactiva, chips por usuario y FAB
-    ├── PantallaDetalle.kt              # Post completo, comentarios en paralelo y botón eliminar con Dialog
+    ├── PantallaDetalle.kt              # Post completo, comentarios en paralelo y diálogos Editar/Eliminar
     ├── PantallaCrear.kt                # Formulario con validación en vivo y confirmación de creación
     └── theme/
         ├── Color.kt                    # Paleta de colores primarios y de estado
@@ -94,6 +96,12 @@ com.tecsup.murocampus/
 ### 3. Búsqueda Reactiva en Tiempo Real (`ViewModel + View`)
 * `PostsViewModel`: Exposición de `listaFiltrada` generada mediante `combine(_lista, _busqueda) { ... }.stateIn(...)`, evaluando coincidencias en título o contenido en memoria sin peticiones de red redundantes.
 * `PantallaLista`: Campo de búsqueda estilizado con iconos de lupa y botón para despejar la consulta, además de avisos dinámicos en caso de no hallar coincidencias.
+
+### 4. Edición de Publicaciones con `@PATCH` (`API + Repository + ViewModel + View`)
+* `PostApi`: Declaración de `@PATCH("posts/{id}") suspend fun editar(@Path("id") id: Int, @Body cambios: EditarPost): Post`.
+* `PostRepositoryRemote`: Implementación segura con manejo de excepciones `Result<Post>`.
+* `PostsViewModel`: Función `editar(id, nuevoTitulo)` que emite el estado reactivo `_editarEstado` y propaga los cambios actualizando inmutablemente con `copy()` tanto `_detalle` como `_lista`.
+* `PantallaDetalle`: Botón de edición en la barra superior con diálogo interactivo y notificación emergente (`Snackbar`).
 
 ---
 
