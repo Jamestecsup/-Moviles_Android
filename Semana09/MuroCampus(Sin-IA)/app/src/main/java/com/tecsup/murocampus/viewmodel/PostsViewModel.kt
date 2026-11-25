@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.murocampus.data.PostRepository
 import com.tecsup.murocampus.model.Comentario
+import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -29,6 +30,9 @@ class PostsViewModel(
 
     private val _usuarioFiltro = MutableStateFlow<Int?>(null)
     val usuarioFiltro: StateFlow<Int?> = _usuarioFiltro.asStateFlow()
+
+    private val _crearEstado = MutableStateFlow<UiState<Post>?>(null)
+    val crearEstado: StateFlow<UiState<Post>?> = _crearEstado.asStateFlow()
 
     init {
         cargar()
@@ -86,5 +90,28 @@ class PostsViewModel(
                 _detalle.value = UiState.Error(mensajeDe(e))
             }
         }
+    }
+
+    fun publicar(titulo: String, texto: String) {
+        if (titulo.isBlank() || texto.isBlank()) return
+        viewModelScope.launch {
+            _crearEstado.value = UiState.Cargando
+            val nuevo = NuevoPost(
+                userId = 1,
+                title = titulo.trim(),
+                body = texto.trim()
+            )
+            repo.crear(nuevo)
+                .onSuccess { creado ->
+                    _crearEstado.value = UiState.Exito(creado)
+                }
+                .onFailure { error ->
+                    _crearEstado.value = UiState.Error(mensajeDe(error))
+                }
+        }
+    }
+
+    fun limpiarCrearEstado() {
+        _crearEstado.value = null
     }
 }
