@@ -13,9 +13,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,14 +42,50 @@ fun PantallaLista(
     onPostClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val estado by viewModel.lista.collectAsStateWithLifecycle()
+    val estado by viewModel.listaFiltrada.collectAsStateWithLifecycle()
     val usuarioFiltro by viewModel.usuarioFiltro.collectAsStateWithLifecycle()
+    val busqueda by viewModel.busqueda.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Barra de búsqueda reactiva en tiempo real
+        OutlinedTextField(
+            value = busqueda,
+            onValueChange = { viewModel.actualizarBusqueda(it) },
+            placeholder = { Text("Buscar publicaciones por texto…") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            trailingIcon = {
+                if (busqueda.isNotEmpty()) {
+                    IconButton(onClick = { viewModel.actualizarBusqueda("") }) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Limpiar búsqueda"
+                        )
+                    }
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFFF8FAFC),
+                unfocusedContainerColor = Color(0xFFF8FAFC),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = Color(0xFFE2E8F0)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
         Spacer(modifier = Modifier.height(8.dp))
 
         // Fila de chips: Todos, Usuario 1 a Usuario 10
@@ -110,11 +153,16 @@ fun PantallaLista(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
+                            val mensajeVacio = if (busqueda.isNotBlank()) {
+                                "No se encontraron publicaciones que coincidan con \"$busqueda\""
+                            } else {
+                                "Sin publicaciones"
+                            }
                             Text(
-                                text = "Sin publicaciones",
+                                text = mensajeVacio,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.Gray,
-                                fontSize = 16.sp
+                                fontSize = 15.sp
                             )
                         }
                     } else {
