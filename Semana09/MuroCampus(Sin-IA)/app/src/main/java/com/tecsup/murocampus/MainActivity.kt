@@ -12,10 +12,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.murocampus.data.PostRepositoryRemote
 import com.tecsup.murocampus.data.remote.RetrofitClient
+import com.tecsup.murocampus.ui.PantallaDetalle
 import com.tecsup.murocampus.ui.PantallaLista
 import com.tecsup.murocampus.ui.theme.MuroCampusTheme
 import com.tecsup.murocampus.viewmodel.PostsViewModel
@@ -32,23 +37,37 @@ class MainActivity : ComponentActivity() {
                 factory = PostsViewModelFactory(repository)
             )
 
+            var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+
             MuroCampusTheme {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text("MuroCampus") },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimary
+                if (idSeleccionado == null) {
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                title = { Text("MuroCampus") },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                                )
                             )
+                        }
+                    ) { innerPadding ->
+                        PantallaLista(
+                            viewModel = viewModel,
+                            onPostClick = { id ->
+                                idSeleccionado = id
+                                viewModel.abrir(id)
+                            },
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
                         )
                     }
-                ) { innerPadding ->
-                    PantallaLista(
+                } else {
+                    PantallaDetalle(
+                        id = idSeleccionado!!,
                         viewModel = viewModel,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
+                        onVolver = { idSeleccionado = null }
                     )
                 }
             }
