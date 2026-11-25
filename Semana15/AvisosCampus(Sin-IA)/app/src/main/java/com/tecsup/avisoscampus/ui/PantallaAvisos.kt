@@ -54,6 +54,12 @@ fun PantallaAvisos(vm: AvisosViewModel) {
         if (Notificador.tienePermiso(contexto)) vm.permisoRespondido(true)
     }
 
+    LaunchedEffect(contexto, vm) {
+        vm.eventos.collect { aviso ->
+            Notificador.mostrar(contexto, aviso)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -86,7 +92,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 }
             }
             TarjetaAvisos("Avisos") {
-                Button(onClick = {}, enabled = false) {
+                Button(onClick = vm::avisarAhora) {
                     Text("Mostrar aviso")
                 }
             }
