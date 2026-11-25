@@ -3,7 +3,9 @@ package com.tecsup.avisoscampus.ui
 import android.Manifest
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tecsup.avisoscampus.model.PermisoUi
 import com.tecsup.avisoscampus.notificacion.Notificador
 import com.tecsup.avisoscampus.receiver.ModoAvionReceiver
@@ -56,17 +61,28 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
     val avisos by vm.avisos.collectAsState()
+    val mensaje by vm.mensaje.collectAsState()
     val pedirPermiso = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         vm.permisoRespondido(it)
     }
 
-    LaunchedEffect(contexto, vm) {
-        if (Notificador.tienePermiso(contexto)) vm.permisoRespondido(true)
+    val propietario = LocalLifecycleOwner.current
+    DisposableEffect(propietario, contexto, vm) {
+        val observador = LifecycleEventObserver { _, evento ->
+            if (evento == Lifecycle.Event.ON_RESUME) {
+                val concedido = Notificador.tienePermiso(contexto)
+                if (concedido || vm.permiso.value != PermisoUi.SinPedir) {
+                    vm.permisoRespondido(concedido)
+                }
+            }
+        }
+        propietario.lifecycle.addObserver(observador)
+        onDispose { propietario.lifecycle.removeObserver(observador) }
     }
 
     LaunchedEffect(contexto, vm) {
         vm.eventos.collect { aviso ->
-            Notificador.mostrar(contexto, aviso)
+            if (!Notificador.mostrar(contexto, aviso)) vm.noSePudoMostrar()
         }
     }
 
@@ -114,6 +130,32 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     }
                 }) {
                     Text("Permitir notificaciones")
+                }
+                mensaje?.let { texto ->
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ) {
+                        Text(texto, modifier = Modifier.padding(12.dp))
+                    }
+                }
+                if (permiso == PermisoUi.Denegado || mensaje != null) {
+                    OutlinedButton(onClick = {
+                        val ajustes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, contexto.packageName)
+                        } else {
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", contexto.packageName, null)
+                            )
+                        }
+                        contexto.startActivity(ajustes)
+                    }) {
+                        Text("Abrir ajustes")
+                    }
                 }
             }
             TarjetaAvisos("Avisos") {
