@@ -1,6 +1,6 @@
 # AvisosCampus
 
-Aplicación Android de la semana 15. Permite mostrar un aviso de entrega, programar un recordatorio para dentro de diez segundos y recibir avisos al activar o desactivar el modo avión. La pantalla muestra los últimos veinte avisos en orden cronológico inverso, incluso si se denegó el permiso para mostrarlos en el panel de Android.
+Aplicación Android de la semana 15. Permite mostrar un aviso de entrega, programar un recordatorio para dentro de diez segundos y recibir avisos al activar o desactivar el modo avión o conectar y desconectar el cargador. La pantalla muestra los últimos veinte avisos en orden cronológico inverso, y el historial se conserva con DataStore al cerrar y volver a abrir la app.
 
 ## Ejecutar
 
@@ -13,13 +13,14 @@ com.tecsup.avisoscampus/
 ├── AvisosApp.kt                   Crea el canal Avisos al iniciar el proceso
 ├── MainActivity.kt                Aloja la pantalla Compose
 ├── data/
-│   └── AvisosRepository.kt        Contrato e implementación del historial en memoria
+│   └── AvisosRepository.kt        Contrato e implementación persistente con DataStore
 ├── model/
 │   └── Modelos.kt                 Aviso, Origen y PermisoUi
 ├── notificacion/
 │   └── Notificador.kt             Comprueba el permiso y publica en el panel de Android
 ├── receiver/
-│   └── ModoAvionReceiver.kt       Entrega el estado del modo avión a la pantalla
+│   ├── ModoAvionReceiver.kt       Entrega el estado del modo avión a la pantalla
+│   └── CargadorReceiver.kt        Entrega los cambios de alimentación a la pantalla
 ├── ui/
 │   ├── PantallaAvisos.kt          Botones, permiso y registro del receptor
 │   ├── HistorialAvisos.kt         Muestra origen, título, texto y hora
@@ -43,7 +44,17 @@ flowchart LR
     N --> A[Panel de Android]
 ```
 
-El ViewModel registra el aviso antes de emitir el evento. Si Android deniega el permiso, la entrada ya está en el historial y la pantalla ofrece abrir Ajustes. El historial y la cuenta regresiva sobreviven a la rotación. Ambos viven en memoria mientras exista el ViewModel. El recordatorio puede llegar con la app minimizada, pero cerrar su proceso interrumpe la cuenta.
+El ViewModel registra el aviso antes de emitir el evento. Si Android deniega el permiso, la entrada ya está en el historial y la pantalla ofrece abrir Ajustes. El historial se serializa en DataStore después de cada registro y se carga cuando se crea el repositorio. La cuenta regresiva sobrevive a la rotación y el recordatorio puede llegar con la app minimizada, pero cerrar su proceso interrumpe la cuenta.
+
+## Mejoras de la fase 2
+
+Se añadieron tres mejoras asistidas por IA y revisadas manualmente.
+
+- **Dos canales:** los avisos normales usan `Avisos` con importancia predeterminada y los recordatorios usan `Urgentes` con importancia alta.
+- **Receptor del cargador:** el interruptor `Escuchar el cargador` registra `Conectado` y `Desconectado`. El receptor se registra solo mientras el interruptor está activo y se elimina en `onDispose`.
+- **Historial persistente:** `AvisosRepositoryPersistente` guarda los registros con DataStore Preferences. Los campos se codifican individualmente para conservar tildes, saltos de línea y separadores.
+
+El ViewModel sigue dependiendo de `AvisosRepository`, sin `Context`, `NotificationManager` ni `BroadcastReceiver`. La UI es la única capa que registra receptores y entrega el contexto al notificador.
 
 ## Capturas del emulador
 
