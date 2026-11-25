@@ -27,14 +27,27 @@ class PostsViewModel(
     private val _detalle = MutableStateFlow<UiState<DetalleUi>>(UiState.Cargando)
     val detalle: StateFlow<UiState<DetalleUi>> = _detalle.asStateFlow()
 
+    private val _usuarioFiltro = MutableStateFlow<Int?>(null)
+    val usuarioFiltro: StateFlow<Int?> = _usuarioFiltro.asStateFlow()
+
     init {
         cargar()
     }
 
     fun cargar() {
+        filtrar(_usuarioFiltro.value)
+    }
+
+    fun filtrar(userId: Int?) {
+        _usuarioFiltro.value = userId
         viewModelScope.launch {
             _lista.value = UiState.Cargando
-            repo.listar()
+            val resultado = if (userId == null) {
+                repo.listar()
+            } else {
+                repo.porUsuario(userId)
+            }
+            resultado
                 .onSuccess { posts ->
                     _lista.value = UiState.Exito(posts)
                 }
