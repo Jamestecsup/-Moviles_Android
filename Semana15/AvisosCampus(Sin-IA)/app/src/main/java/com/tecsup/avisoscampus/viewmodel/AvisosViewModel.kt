@@ -31,6 +31,9 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
     private val _faltan = MutableStateFlow<Int?>(null)
     val faltan = _faltan.asStateFlow()
 
+    private val _escuchandoAvion = MutableStateFlow(false)
+    val escuchandoAvion = _escuchandoAvion.asStateFlow()
+
     fun permisoRespondido(concedido: Boolean) {
         _permiso.value = if (concedido) PermisoUi.Concedido else PermisoUi.Denegado
     }
@@ -66,5 +69,16 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
 
     fun cancelarRecordatorio() {
         trabajo?.cancel()
+    }
+
+    fun cambiarEscucha(valor: Boolean) {
+        _escuchandoAvion.value = valor
+    }
+
+    fun alCambiarModoAvion(activo: Boolean) {
+        if (!_escuchandoAvion.value) return
+        viewModelScope.launch {
+            registrarYEmitir("Modo avión", if (activo) "Activado" else "Desactivado", Origen.MODO_AVION)
+        }
     }
 }
