@@ -50,6 +50,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tecsup.avisoscampus.model.PermisoUi
 import com.tecsup.avisoscampus.notificacion.Notificador
+import com.tecsup.avisoscampus.receiver.CargadorReceiver
 import com.tecsup.avisoscampus.receiver.ModoAvionReceiver
 import com.tecsup.avisoscampus.viewmodel.AvisosViewModel
 
@@ -59,7 +60,8 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
-    val escuchando by vm.escuchandoAvion.collectAsState()
+    val escuchandoAvion by vm.escuchandoAvion.collectAsState()
+    val escuchandoCargador by vm.escuchandoCargador.collectAsState()
     val avisos by vm.avisos.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
     val pedirPermiso = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -86,8 +88,8 @@ fun PantallaAvisos(vm: AvisosViewModel) {
         }
     }
 
-    DisposableEffect(contexto, vm, escuchando) {
-        if (escuchando) {
+    if (escuchandoAvion) {
+        DisposableEffect(contexto, vm) {
             val receptor = ModoAvionReceiver(vm::alCambiarModoAvion)
             ContextCompat.registerReceiver(
                 contexto,
@@ -96,8 +98,18 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
             onDispose { contexto.unregisterReceiver(receptor) }
-        } else {
-            onDispose {}
+        }
+    }
+
+    if (escuchandoCargador) {
+        DisposableEffect(contexto, vm) {
+            val receptor = CargadorReceiver(vm::alCambiarCargador)
+            val filtro = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+            ContextCompat.registerReceiver(contexto, receptor, filtro, ContextCompat.RECEIVER_NOT_EXPORTED)
+            onDispose { contexto.unregisterReceiver(receptor) }
         }
     }
 
@@ -180,23 +192,25 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 }
             }
             TarjetaAvisos("Receptor de anuncios") {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .toggleable(
-                            value = escuchando,
-                            role = Role.Switch,
-                            onValueChange = vm::cambiarEscucha
-                        ),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Escuchar el modo avión", modifier = Modifier.weight(1f))
-                    Switch(checked = escuchando, onCheckedChange = null)
-                }
+                InterruptorEscucha("Escuchar el modo avión", escuchandoAvion, vm::cambiarEscucha)
+                InterruptorEscucha("Escuchar el cargador", escuchandoCargador, vm::cambiarEscuchaCargador)
             }
             HistorialAvisos(avisos)
         }
+    }
+}
+
+@Composable
+private fun InterruptorEscucha(texto: String, activo: Boolean, alCambiar: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .toggleable(value = activo, role = Role.Switch, onValueChange = alCambiar),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(texto, modifier = Modifier.weight(1f))
+        Switch(checked = activo, onCheckedChange = null)
     }
 }
 
