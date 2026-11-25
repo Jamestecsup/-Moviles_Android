@@ -15,14 +15,18 @@ import androidx.core.content.ContextCompat
 import com.tecsup.avisoscampus.MainActivity
 import com.tecsup.avisoscampus.R
 import com.tecsup.avisoscampus.model.Aviso
+import com.tecsup.avisoscampus.model.Origen
 
 object Notificador {
-    const val CANAL = "avisos"
+    private const val CANAL_AVISOS = "avisos"
+    private const val CANAL_URGENTES = "urgentes"
 
-    fun crearCanal(context: Context) {
+    fun crearCanales(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val canal = NotificationChannel(CANAL, "Avisos", NotificationManager.IMPORTANCE_DEFAULT)
-            context.getSystemService(NotificationManager::class.java).createNotificationChannel(canal)
+            val avisos = NotificationChannel(CANAL_AVISOS, "Avisos", NotificationManager.IMPORTANCE_DEFAULT)
+            val urgentes = NotificationChannel(CANAL_URGENTES, "Urgentes", NotificationManager.IMPORTANCE_HIGH)
+            context.getSystemService(NotificationManager::class.java)
+                .createNotificationChannels(listOf(avisos, urgentes))
         }
     }
 
@@ -40,11 +44,14 @@ object Notificador {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val pendiente = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val notificacion = NotificationCompat.Builder(context, CANAL)
+        val esRecordatorio = aviso.origen == Origen.RECORDATORIO
+        val canal = if (esRecordatorio) CANAL_URGENTES else CANAL_AVISOS
+        val prioridad = if (esRecordatorio) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT
+        val notificacion = NotificationCompat.Builder(context, canal)
             .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(prioridad)
             .setContentIntent(pendiente)
             .setAutoCancel(true)
             .build()

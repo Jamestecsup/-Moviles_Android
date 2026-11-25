@@ -6,6 +6,6 @@ import com.tecsup.avisoscampus.notificacion.Notificador
 class AvisosApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        Notificador.crearCanal(this)
+        Notificador.crearCanales(this)
     }
 }
