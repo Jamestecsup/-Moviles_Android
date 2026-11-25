@@ -31,19 +31,19 @@ class PostRepositoryRemote(
     }
 
     override suspend fun listar(): Result<List<Post>> = llamar {
-        api.listar()
+        api.listar().map { CampusContenido.adaptarPost(it) }
     }
 
     override suspend fun detalle(id: Int): Result<Post> = llamar {
-        api.detalle(id)
+        CampusContenido.adaptarPost(api.detalle(id))
     }
 
     override suspend fun comentarios(id: Int): Result<List<Comentario>> = llamar {
-        api.comentarios(id)
+        api.comentarios(id).map { CampusContenido.adaptarComentario(it) }
     }
 
     override suspend fun porUsuario(userId: Int): Result<List<Post>> = llamar {
-        api.porUsuario(userId)
+        api.porUsuario(userId).map { CampusContenido.adaptarPost(it) }
     }
 
     override suspend fun crear(nuevo: NuevoPost): Result<Post> = llamar {
@@ -64,6 +64,6 @@ class PostRepositoryRemote(
     }
 
     override suspend fun editar(id: Int, nuevoTitulo: String): Result<Post> = llamar {
-        api.editar(id, EditarPost(title = nuevoTitulo))
+        CampusContenido.adaptarPost(api.editar(id, EditarPost(title = nuevoTitulo)))
     }
 }

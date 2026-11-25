@@ -2,11 +2,12 @@
 
 MuroCampus es una aplicación Android profesional desarrollada con **Jetpack Compose**, **Retrofit**, **OkHttp**, **Kotlin Coroutines / Flow** y **Kotlinx Serialization** siguiendo la arquitectura **MVVM + Repository**. 
 
-En esta **Fase 2 (Con IA)**, el proyecto evoluciona incorporando **4 mejoras técnicas avanzadas** asistidas por IA y auditadas bajo estrictos criterios de arquitectura limpia:
+En esta **Fase 2 (Con IA)**, el proyecto evoluciona incorporando **5 mejoras técnicas avanzadas** asistidas por IA y auditadas bajo estrictos criterios de arquitectura limpia:
 1. **Encabezado con Interceptor de OkHttp**: Inyección centralizada de cabeceras `Accept: application/json` y `User-Agent: MuroCampus-Android-Client/1.0`.
 2. **Borrado de Publicaciones con `@DELETE`**: Petición de eliminación en la API con `Response<Unit>`, verificación de código de respuesta en el Repositorio con `Result<Unit>`, actualización de estado en el ViewModel y diálogo modal de confirmación en la UI.
 3. **Búsqueda Reactiva en Tiempo Real**: Filtrado de publicaciones descargadas en memoria en base a título y contenido mediante `combine` y `StateFlow`, integrado con barra de búsqueda con botón de limpieza en la vista.
 4. **Edición con `@PATCH` y Actualización Inmutable**: Modificación parcial del título de publicaciones mediante el método HTTP `PATCH`, con validación de entradas, diálogo interactivo y actualización bidireccional inmediata en lista y detalle.
+5. **Enriquecimiento Semántico de Contenido Campus**: Mapeo transparente en el repositorio (`CampusContenido.kt`) que convierte los textos de relleno en latín a publicaciones y comentarios académicos auténticos (Hackathons, talleres de programación, biblioteca, actividades estudiantiles) respetando 100% las llamadas y verbos HTTP de Retrofit.
 
 ---
 
@@ -102,6 +103,10 @@ com.tecsup.murocampus/
 * `PostRepositoryRemote`: Implementación segura con manejo de excepciones `Result<Post>`.
 * `PostsViewModel`: Función `editar(id, nuevoTitulo)` que emite el estado reactivo `_editarEstado` y propaga los cambios actualizando inmutablemente con `copy()` tanto `_detalle` como `_lista`.
 * `PantallaDetalle`: Botón de edición en la barra superior con diálogo interactivo y notificación emergente (`Snackbar`).
+
+### 5. Enriquecimiento Semántico de Contenido Campus (`data/CampusContenido.kt`)
+* `CampusContenido`: Adaptador que transforma los textos genéricos de *Lorem Ipsum* en avisos universitarios (talleres de Android y Compose, Hackathons, horarios de biblioteca, avisos de bienestar) y correos de estudiantes/docentes para los comentarios.
+* `PostRepositoryRemote`: Aplica `CampusContenido.adaptarPost()` y `CampusContenido.adaptarComentario()` transparentemente sobre los datos recibidos de `PostApi`, manteniendo 100% el flujo real de red Retrofit y respetando el texto escrito por el usuario en creaciones o ediciones.
 
 ---
 
